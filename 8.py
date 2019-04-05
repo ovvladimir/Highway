@@ -1,4 +1,3 @@
-from random import randint, randrange
 import pygame as pg
 import sys
 import random
@@ -55,16 +54,16 @@ class Car(pg.sprite.Sprite):
         self.w = image.get_width() // 2
         self.rect = self.image.get_rect(center=(x, -self.h))
         self.add(group)
-        self.speed = randint(3, 5)
+        self.speed = random.randint(3, 5)
         self.block = 0
 
     def render(self):
-        car_x = randrange(80, W, 80)
+        car_x = random.randrange(80, W, 80)
         for img in cars:
             if car_x == img.rect.x + img.w:
                 self.block = 1
         if self.block == 0:
-            car_new = Car(car_x, CARS[randint(0, n)], cars)
+            car_new = Car(car_x, CARS[random.randint(0, n)], cars)
             all_sprites.add(car_new, layer=2)
         else:
             self.block = 0
@@ -106,7 +105,7 @@ cars = pg.sprite.Group()
 roads = pg.sprite.Group()
 
 player = Player(x=W/2, y=H/2, angle=0, speed=2, image=player_image)
-car = Car(randrange(80, W, 80), CARS[randint(0, n)], cars)
+car = Car(random.randrange(80, W, 80), CARS[random.randint(0, n)], cars)
 for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else H, group=roads)
 
