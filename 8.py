@@ -80,7 +80,7 @@ class Car(pg.sprite.Sprite):
 class Background(pg.sprite.Sprite):
     def __init__(self, x, y, group):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.Surface((800, 600), pg.SRCALPHA)
+        self.image = pg.Surface((W, H), pg.SRCALPHA)
         pg.draw.line(self.image, (0, 128, 0), [20, 0], [20, 600], 40)
         pg.draw.line(self.image, (0, 128, 0), [780, 0], [780, 600], 40)
         for xx in range(10):
@@ -124,12 +124,12 @@ while game:
             sys.exit(0)
         elif e.type == pg.USEREVENT:
             car.render()
-        elif e.type == pg.KEYDOWN:
+        '''elif e.type == pg.KEYDOWN:
             if e.key == pg.K_RIGHT:
-                # player.angle -= 15
+                player.angle -= 15
                 player.velocity.x = player.speed
             elif e.key == pg.K_LEFT:
-                # player.angle += 15
+                player.angle += 15
                 player.velocity.x = -player.speed
             elif e.key == pg.K_DOWN:
                 player.velocity.y = player.speed + 1
@@ -138,24 +138,33 @@ while game:
         elif e.type == pg.KEYUP:
             if e.key == pg.K_RIGHT or e.key == pg.K_LEFT:
                 player.velocity.x = 0
-                # player.angle = 0
+                player.angle = 0
             elif e.key == pg.K_DOWN or e.key == pg.K_UP:
-                player.velocity.y = 0
+                player.velocity.y = 0'''
 
     keys = pg.key.get_pressed()
     if keys[pg.K_RIGHT]:
+        player.velocity.x = player.speed
         player.angle -= 1
         if player.angle < -20:
             player.angle = -20
     elif keys[pg.K_LEFT]:
+        player.velocity.x = -player.speed
         player.angle += 1
         if player.angle > 20:
             player.angle = 20
-    elif pg.KEYUP:
+    else:
+        player.velocity.x = 0
         if player.angle < 0:
             player.angle += 1
         elif player.angle > 0:
             player.angle -= 1
+    if keys[pg.K_UP]:
+        player.velocity.y = -player.speed
+    elif keys[pg.K_DOWN]:
+        player.velocity.y = player.speed
+    else:
+        player.velocity.y = 0
 
     if player.position.x > 760:
         player.position.x = 760
