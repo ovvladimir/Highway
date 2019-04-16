@@ -123,8 +123,7 @@ for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, speed=2, group=roads)
 for ix in range(2):
     for iy in range(6):
-        tree = Tree(x=0 if ix == 0 else 760, y=0 if iy == -H else -H+iy*200,
-                    speed=2, image=tree_image, group=trees)
+        tree = Tree(x=ix*760, y=-H+iy*200, speed=2, image=tree_image, group=trees)
 
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=1)
