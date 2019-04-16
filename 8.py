@@ -48,7 +48,6 @@ class Player(pg.sprite.Sprite):
 class Car(pg.sprite.Sprite):
     def __init__(self, x, image, group):
         pg.sprite.Sprite.__init__(self)
-        # self.image = image
         self.image = pg.transform.flip(image, False, True)
         self.h = image.get_height()
         self.w = image.get_width() // 2
@@ -78,7 +77,7 @@ class Car(pg.sprite.Sprite):
 
 
 class Background(pg.sprite.Sprite):
-    def __init__(self, x, y, group):
+    def __init__(self, x, y, speed, group):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.Surface((W, H), pg.SRCALPHA)
         pg.draw.line(self.image, (0, 128, 0), [20, 0], [20, 600], 40)
@@ -88,17 +87,14 @@ class Background(pg.sprite.Sprite):
                 pg.draw.line(self.image, (200, 200, 200),
                              [40+xx*80, 0 if xx == 0 or xx == 9 else 10+yy*60],
                              [40+xx*80, 600 if xx == 0 or xx == 9 else 50+yy*60], 5)
-        self.x = x
-        self.y = y - 2
-        self.speed = 2
+        self.speed = speed
         self.add(group)
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
-        self.y += self.speed
-        if self.y >= H:
-            self.y = - H
-        self.rect.y = self.y
+        self.rect.y += self.speed
+        if self.rect.y >= H:
+            self.rect.y = - H
 
 
 cars = pg.sprite.Group()
@@ -107,7 +103,7 @@ roads = pg.sprite.Group()
 player = Player(x=W/2, y=H/2, angle=0, speed=2, image=player_image)
 car = Car(random.randrange(80, W, 80), CARS[random.randint(0, n)], cars)
 for i in range(2):
-    bg = Background(x=0, y=0 if i == 0 else H, group=roads)
+    bg = Background(x=0, y=0 if i == 0 else -H, speed=2, group=roads)
 
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=1)
