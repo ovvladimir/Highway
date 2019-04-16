@@ -9,6 +9,7 @@ car_accident = 0
 drove_cars = 0
 
 player_image = pg.image.load('img/Car.png')
+d_image = pg.image.load('img/d.png')
 CARS = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
         pg.image.load('img/car3.png'), pg.image.load('img/car4.png')]
 n = len(CARS) - 1
@@ -97,18 +98,39 @@ class Background(pg.sprite.Sprite):
             self.rect.y = - H
 
 
+class Tree(pg.sprite.Sprite):
+    def __init__(self, x, y, speed, image, group):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.transform.scale(image, (image.get_width()//2,
+                                        image.get_height()//2))
+        self.speed = speed
+        self.add(group)
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.y >= H:
+            self.rect.y = - H
+
+
 cars = pg.sprite.Group()
 roads = pg.sprite.Group()
+trees = pg.sprite.Group()
 
 player = Player(x=W/2, y=H/2, angle=0, speed=2, image=player_image)
 car = Car(random.randrange(80, W, 80), CARS[random.randint(0, n)], cars)
 for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, speed=2, group=roads)
+for ix in range(2):
+    for iy in range(8):
+        tree = Tree(x=0 if ix == 0 else 760, y=0 if iy == -H else -H+iy*200,
+                    speed=2, image=d_image, group=trees)
 
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=1)
 all_sprites.add(cars, layer=2)
 all_sprites.add(player, layer=3)
+all_sprites.add(trees, layer=4)
 
 game = True
 while game:
@@ -158,7 +180,7 @@ while game:
     if keys[pg.K_UP]:
         player.velocity.y = -player.speed
     elif keys[pg.K_DOWN]:
-        player.velocity.y = player.speed
+        player.velocity.y = player.speed + 1
     else:
         player.velocity.y = 0
 
