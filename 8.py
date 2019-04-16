@@ -9,7 +9,7 @@ car_accident = 0
 drove_cars = 0
 
 player_image = pg.image.load('img/Car.png')
-d_image = pg.image.load('img/d.png')
+tree_image = pg.image.load('img/d.png')
 CARS = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
         pg.image.load('img/car3.png'), pg.image.load('img/car4.png')]
 n = len(CARS) - 1
@@ -122,9 +122,9 @@ car = Car(random.randrange(80, W, 80), CARS[random.randint(0, n)], cars)
 for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, speed=2, group=roads)
 for ix in range(2):
-    for iy in range(8):
+    for iy in range(6):
         tree = Tree(x=0 if ix == 0 else 760, y=0 if iy == -H else -H+iy*200,
-                    speed=2, image=d_image, group=trees)
+                    speed=2, image=tree_image, group=trees)
 
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=1)
