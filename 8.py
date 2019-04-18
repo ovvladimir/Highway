@@ -11,8 +11,15 @@ drove_cars = 0
 player_image = pg.image.load('img/Car.png')
 tree_image = pg.image.load('img/d.png')
 CARS = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
-        pg.image.load('img/car3.png'), pg.image.load('img/car4.png')]
-n = len(CARS) - 1
+        pg.image.load('img/car3.png')]
+n = len(CARS)
+COLOR = ['red3', 'dark green', 'navy', 'orange']
+imgColor = pg.image.load('img/car4.png')
+originalColor = imgColor.get_at((imgColor.get_width()//2, imgColor.get_height()//2))
+ar = pg.PixelArray(imgColor)
+ar.replace(originalColor, pg.Color(COLOR[random.randint(0, len(COLOR)-1)]), 0.1)
+del ar
+CARS.append(imgColor)
 
 FPS = 120
 clock = pg.time.Clock()
@@ -78,7 +85,13 @@ class Car(pg.sprite.Sprite):
             if car_x == img.rect.x + img.w:
                 block = 1
         if block == 0:
-            car_new = Car(car_x, y, CARS[random.randint(0, n)], dy, cars)
+            num = random.randint(0, n)
+            if num == 3:
+                originalColor = CARS[num].get_at((CARS[num].get_width()//2, CARS[num].get_height()//2))
+                ar = pg.PixelArray(CARS[num])
+                ar.replace(originalColor, pg.Color(COLOR[random.randint(0, len(COLOR)-1)]), 0.1)
+                del ar
+            car_new = Car(car_x, y, CARS[num], dy, cars)
             all_sprites.add(car_new, layer=2)
 
     def update(self):
@@ -138,7 +151,7 @@ cars = pg.sprite.Group()
 roads = pg.sprite.Group()
 trees = pg.sprite.Group()
 
-player = Player(x=W/2, y=H/2, angle=0, image=player_image)
+player = Player(x=W/2+80, y=H/2, angle=0, image=player_image)
 car = Car(random.randrange(0, W/2, 80), 0, CARS[random.randint(0, n)], True, cars)
 for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, group=roads)
@@ -159,7 +172,6 @@ while game:
         if e.type == pg.QUIT or e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
             game = False
             print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
-            sys.exit(0)
         elif e.type == pg.USEREVENT:
             car.render()
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
@@ -228,4 +240,8 @@ while game:
     s = 150+abs(player.velocity.y)*100 if player.velocity.y <= 0 else 200-player.velocity.y*100
     screen.blit(text.render(f'Скорость: {int(s)} км/ч',
                             True, pg.Color('lime green'), None), (480, 0))
+    screen.blit(text.render(f'FPS: {int(clock.get_fps())}',
+                            True, pg.Color('lime green'), None), (150, 0))
     pg.display.update()
+
+sys.exit(0)
