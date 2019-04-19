@@ -2,11 +2,17 @@ import pygame as pg
 import sys
 import random
 
+import os
+os.environ['SDL_VIDEO_CENTERED'] = '1'
+
 W = 800
 H = 600
 BG = (100, 100, 100)
 car_accident = 0
 drove_cars = 0
+speed = 2
+acceleration = 0.05
+fscreen = [1, 2]
 
 player_image = pg.image.load('img/Car.png')
 tree_image = pg.image.load('img/d.png')
@@ -23,21 +29,15 @@ CARS.append(imgColor)
 
 FPS = 120
 clock = pg.time.Clock()
-speed = 2
-acceleration = 0.05
 
 pg.init()
 pg.time.set_timer(pg.USEREVENT, 300)
-
-screen = pg.display.set_mode((W, H))
-pg.display.set_caption('Автомагистраль')
-pg.display.set_icon(pg.image.load('img/car.png'))
-pg.mouse.set_visible(False)
-
 text = pg.font.SysFont('Arial', 24, True, True)
 
-fscreen = [1, 2]
-SIZE = pg.display.list_modes()[0]
+pg.display.set_icon(pg.image.load('img/car.png'))
+pg.display.set_caption('Автомагистраль')
+pg.mouse.set_visible(False)
+screen = pg.display.set_mode((W, H))
 
 
 class Player(pg.sprite.Sprite):
@@ -171,15 +171,14 @@ while game:
     for e in pg.event.get():
         if e.type == pg.QUIT or e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
             game = False
-            print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
         elif e.type == pg.USEREVENT:
             car.render()
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
-                pg.display.set_mode((W, H))
+                screen = pg.display.set_mode((W, H))
             elif fscreen[0] == 2:
-                pg.display.set_mode((W, H), pg.FULLSCREEN)
+                screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
     keys = pg.key.get_pressed()
     if keys[pg.K_RIGHT]:
@@ -244,4 +243,5 @@ while game:
                             True, pg.Color('lime green'), None), (150, 0))
     pg.display.update()
 
+print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
 sys.exit(0)
