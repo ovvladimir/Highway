@@ -13,8 +13,12 @@ drove_cars = 0
 speed = 2
 acceleration = 0.05
 fscreen = [1, 2]
+f = 40
+R, G, B = 0, 255, 0
 
 player_image = pg.image.load('img/Car.png')
+fuel_image = pg.image.load('img/fuel.png')
+canister_image = pg.image.load('img/canister.png')
 tree_image = pg.image.load('img/d.png')
 CARS = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
         pg.image.load('img/car3.png')]
@@ -31,7 +35,11 @@ FPS = 120
 clock = pg.time.Clock()
 
 pg.init()
-pg.time.set_timer(pg.USEREVENT, 300)
+u1_event = pg.USEREVENT + 1
+pg.time.set_timer(u1_event, 300)
+u2_event = pg.USEREVENT + 2
+pg.time.set_timer(u2_event, 28000)
+
 text = pg.font.SysFont('Arial', 24, True, True)
 
 pg.display.set_icon(pg.image.load('img/car.png'))
@@ -97,15 +105,13 @@ class Car(pg.sprite.Sprite):
     def update(self):
         global drove_cars
         if self.x < W / 2:
-            if self.rect.y < H + self.h:
-                self.rect.y += self.speed
-            else:
+            self.rect.y += self.speed
+            if self.rect.y > H + self.h:
                 self.kill()
                 drove_cars += 1
         if self.x > W / 2:
-            if self.rect.y > 0 - self.h:
-                self.rect.y -= self.speed - 1
-            else:
+            self.rect.y -= self.speed - 1
+            if self.rect.y < 0 - self.h:
                 self.kill()
                 drove_cars += 1
 
@@ -132,19 +138,24 @@ class Background(pg.sprite.Sprite):
             self.rect.y = - H
 
 
-class Tree(pg.sprite.Sprite):
-    def __init__(self, x, y, image, group):
+class Varia(pg.sprite.Sprite):
+    def __init__(self, x, y, image, h):
+        self.h = h
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(image, (image.get_width()//2,
-                                        image.get_height()//2))
+        if image is tree_image:
+            self.image = pg.transform.scale(image, (image.get_width()//2, h//2))
+        else:
+            self.image = image
         self.speed = speed
-        self.add(group)
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         self.rect.y += self.speed
         if self.rect.y >= H:
             self.rect.y = - H
+            if self is canister:
+                self.kill()
+                self.rect.center = random.randrange(480, W, 80), - self.h
 
 
 cars = pg.sprite.Group()
@@ -157,10 +168,15 @@ for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, group=roads)
 for ix in range(3):
     for iy in range(6):
-        tree = Tree(x=ix*380, y=-H+iy*200, image=tree_image, group=trees)
+        tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
+        tree.add(trees)
+canister = Varia(x=random.randrange(480, W, 80)-canister_image.get_width()/2,
+                 y=-canister_image.get_height(), image=canister_image,
+                 h=canister_image.get_height())
 
+canisters = pg.sprite.Group(canister)
 all_sprites = pg.sprite.LayeredUpdates()
-all_sprites.add(roads, layer=1)
+all_sprites.add(roads, layer=0)
 all_sprites.add(cars, layer=2)
 all_sprites.add(player, layer=3)
 all_sprites.add(trees, layer=4)
@@ -168,11 +184,17 @@ all_sprites.add(trees, layer=4)
 game = True
 while game:
     clock.tick(FPS)
+    if pg.event.get(pg.QUIT):
+        break
     for e in pg.event.get():
-        if e.type == pg.QUIT or e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
+        if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
             game = False
-        elif e.type == pg.USEREVENT:
+        elif e.type == u1_event:
             car.render()
+        elif e.type == u2_event:
+            canister.add(canisters)
+            all_sprites.add(canister, layer=1)
+            pg.time.set_timer(u2_event, random.randrange(8000, 28001, 5000))
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
@@ -230,15 +252,31 @@ while game:
     elif pg.sprite.spritecollideany(player, trees):
         player.angle = -60
         player.velocity.y = speed
+    elif pg.sprite.spritecollide(player, canisters, True):
+        canister.rect.center = random.randrange(480, W, 80), - canister.h
+        f = 40
+    if player.position.x > W / 2:
+        f -= 0.01
+    else:
+        f -= 0.02
+    if f < 0 or car_accident >= 10:
+        print('Game over')
+        break
+    if f < 15:
+        R, G = 255, 0
+    else:
+        R, G = 0, 255
 
     screen.fill(BG)
     all_sprites.update()
     all_sprites.draw(screen)
+    pg.draw.rect(screen, (R, G, B), (730, 55, -20, -f))
+    screen.blit(fuel_image, (700, 5))
     screen.blit(text.render(f'Аварий: {car_accident} Проехало машин: {drove_cars}',
                             True, pg.Color('lime green'), BG), (50, 570))
     s = 150+abs(player.velocity.y)*100 if player.velocity.y <= 0 else 200-player.velocity.y*100
-    screen.blit(text.render(f'Скорость: {int(s)} км/ч',
-                            True, pg.Color('lime green'), None), (480, 0))
+    screen.blit(text.render(f'speed: {int(s)} км/ч',
+                            True, pg.Color('lime green'), None), (450, 0))
     screen.blit(text.render(f'FPS: {int(clock.get_fps())}',
                             True, pg.Color('lime green'), None), (150, 0))
     pg.display.update()
