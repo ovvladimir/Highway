@@ -1,6 +1,7 @@
 import pygame as pg
 import sys
 import random
+import math
 
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -8,13 +9,15 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'
 W = 800
 H = 600
 BG = (100, 100, 100)
+WHITE = (255, 255, 255)
 car_accident = 0
 drove_cars = 0
 speed = 2
 acceleration = 0.05
 fscreen = [1, 2]
-f = 40
+level = 40
 R, G, B = 0, 255, 0
+radius = 140
 
 player_image = pg.image.load('img/Car.png')
 fuel_image = pg.image.load('img/fuel.png')
@@ -36,11 +39,12 @@ clock = pg.time.Clock()
 
 pg.init()
 u1_event = pg.USEREVENT + 1
-pg.time.set_timer(u1_event, 300)
+pg.time.set_timer(u1_event, 350)
 u2_event = pg.USEREVENT + 2
 pg.time.set_timer(u2_event, 28000)
 
 text = pg.font.SysFont('Arial', 24, True, True)
+txt = pg.font.SysFont('Arial', 16, True, False)
 
 pg.display.set_icon(pg.image.load('img/car.png'))
 pg.display.set_caption('Автомагистраль')
@@ -79,27 +83,28 @@ class Car(pg.sprite.Sprite):
         self.speed = random.randint(3, 5)
 
     def render(self):
+        global car_x, car_y, car_dy
         block = 0
         direction = random.randint(0, 1)
         if direction == 0:
-            y = - self.h
-            dy = True
+            car_y = - self.h
+            car_dy = True
             car_x = random.randrange(80, W/2, 80)
         elif direction == 1:
-            y = H + self.h
-            dy = False
-            car_x = random.randrange(480, W, 80)
+            car_y = H + self.h
+            car_dy = False
+            car_x = random.randrange(W/2+80, W, 80)
         for img in cars:
             if car_x == img.rect.x + img.w:
                 block = 1
         if block == 0:
             num = random.randint(0, n)
             if num == 3:
-                originalColor = CARS[num].get_at((CARS[num].get_width()//2, CARS[num].get_height()//2))
-                ar = pg.PixelArray(CARS[num])
-                ar.replace(originalColor, pg.Color(COLOR[random.randint(0, len(COLOR)-1)]), 0.1)
-                del ar
-            car_new = Car(car_x, y, CARS[num], dy, cars)
+                original_Color = CARS[num].get_at((CARS[num].get_width()//2, CARS[num].get_height()//2))
+                arr = pg.PixelArray(CARS[num])
+                arr.replace(original_Color, pg.Color(COLOR[random.randint(0, len(COLOR)-1)]), 0.1)
+                del arr
+            car_new = Car(car_x, car_y, CARS[num], car_dy, cars)
             all_sprites.add(car_new, layer=2)
 
     def update(self):
@@ -155,7 +160,7 @@ class Varia(pg.sprite.Sprite):
             self.rect.y = - H
             if self is canister:
                 self.kill()
-                self.rect.center = random.randrange(480, W, 80), - self.h
+                self.rect.center = random.randrange(W/2+80, W, 80), - self.h
 
 
 cars = pg.sprite.Group()
@@ -170,7 +175,7 @@ for ix in range(3):
     for iy in range(6):
         tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
         tree.add(trees)
-canister = Varia(x=random.randrange(480, W, 80)-canister_image.get_width()/2,
+canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  y=-canister_image.get_height(), image=canister_image,
                  h=canister_image.get_height())
 
@@ -180,6 +185,33 @@ all_sprites.add(roads, layer=0)
 all_sprites.add(cars, layer=2)
 all_sprites.add(player, layer=3)
 all_sprites.add(trees, layer=4)
+
+
+def speedometer():
+    value = 0
+    for deg in range(5, 85, 6):
+        cos = math.cos(math.radians(deg))
+        sin = math.sin(math.radians(deg))
+        pg.draw.line(screen, WHITE,
+                     [W - radius * cos, H - radius * sin],
+                     [W - (radius - 10) * cos, H - (radius - 10) * sin], 2)
+    for deg in range(5, 91, 18):
+        cos = math.cos(math.radians(deg))
+        sin = math.sin(math.radians(deg))
+        pg.draw.line(screen, WHITE,
+                     [W - radius * cos, H - radius * sin],
+                     [W - (radius - 20) * cos, H - (radius - 20) * sin], 2)
+        screen.blit(txt.render(str(value), True, WHITE, None),
+                    (W - (radius - 30) * cos, H - (radius - 30) * sin))
+        value += 100
+    screen.blit(text.render('км/ч', True, WHITE, None), (740, 550))
+    s = 200 + abs(player.velocity.y) * 100 if player.velocity.y <= 0 else 180 - player.velocity.y * 100
+    cos = math.cos(math.radians(abs(s) // 7))
+    sin = math.sin(math.radians(abs(s) // 7))
+    pg.draw.line(screen, (255, 0, 0),  [W, H],
+                 [W - (radius - 10) * cos, H - (radius - 10) * sin], 4)
+    pg.draw.circle(screen, WHITE, [W, H], 25, 0)
+
 
 game = True
 while game:
@@ -253,32 +285,31 @@ while game:
         player.angle = -60
         player.velocity.y = speed
     elif pg.sprite.spritecollide(player, canisters, True):
-        canister.rect.center = random.randrange(480, W, 80), - canister.h
-        f = 40
+        canister.rect.center = random.randrange(W/2+80, W, 80), - canister.h
+        level = 40
     if player.position.x > W / 2:
-        f -= 0.01
+        level -= 0.01
     else:
-        f -= 0.02
-    if f < 0 or car_accident >= 10:
+        level -= 0.02
+    if level < 0 or car_accident >= 10:
         print('Game over')
         break
-    if f < 15:
+    if level <= 10:
         R, G = 255, 0
+    elif 10 < level < 15:
+        R, G = 255, 255
     else:
         R, G = 0, 255
 
     screen.fill(BG)
     all_sprites.update()
     all_sprites.draw(screen)
-    pg.draw.rect(screen, (R, G, B), (730, 55, -20, -f))
+    pg.draw.rect(screen, (R, G, B), (730, 55, -20, -level))
+    speedometer()
     screen.blit(fuel_image, (700, 5))
     screen.blit(text.render(f'Аварий: {car_accident} Проехало машин: {drove_cars}',
                             True, pg.Color('lime green'), BG), (50, 570))
-    s = 150+abs(player.velocity.y)*100 if player.velocity.y <= 0 else 200-player.velocity.y*100
-    screen.blit(text.render(f'speed: {int(s)} км/ч',
-                            True, pg.Color('lime green'), None), (450, 0))
-    screen.blit(text.render(f'FPS: {int(clock.get_fps())}',
-                            True, pg.Color('lime green'), None), (150, 0))
+    screen.blit(txt.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
     pg.display.update()
 
 print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
