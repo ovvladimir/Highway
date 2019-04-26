@@ -205,9 +205,9 @@ def speedometer():
                     (W - (radius - 30) * cos, H - (radius - 30) * sin))
         value += 100
     screen.blit(text.render('км/ч', True, WHITE, None), (740, 550))
-    s = 200 + abs(player.velocity.y) * 100 if player.velocity.y <= 0 else 180 - player.velocity.y * 100
-    cos = math.cos(math.radians(abs(s) // 7))
-    sin = math.sin(math.radians(abs(s) // 7))
+    s = abs(30 - player.velocity.y * 14 if player.velocity.y <= 0 else 24 - player.velocity.y * 14)
+    cos = math.cos(math.radians(s))
+    sin = math.sin(math.radians(s))
     pg.draw.line(screen, (255, 0, 0),  [W, H],
                  [W - (radius - 10) * cos, H - (radius - 10) * sin], 4)
     pg.draw.circle(screen, WHITE, [W, H], 25, 0)
@@ -253,8 +253,8 @@ while game:
             player.angle -= 1
     if keys[pg.K_UP]:
         player.velocity.y -= acceleration
-        if player.velocity.y < -4:
-            player.velocity.y = -4
+        if player.velocity.y < -speed * 2:
+            player.velocity.y = -speed * 2
     elif keys[pg.K_DOWN]:
         player.velocity.y += acceleration
         if player.velocity.y > speed + 1:
