@@ -43,8 +43,14 @@ pg.time.set_timer(u1_event, 350)
 u2_event = pg.USEREVENT + 2
 pg.time.set_timer(u2_event, 27000)
 
-text = pg.font.SysFont('Arial', 24, True, True)
-txt = pg.font.SysFont('Arial', 16, True, False)
+text1 = pg.font.SysFont('Arial', 24, True, True)
+text2 = pg.font.SysFont('Arial', 16, True, False)
+text3 = pg.font.SysFont('Arial', 50, True, True)
+txt = text3.render('GAME OVER', True, pg.Color('red'), None)
+txt_w, txt_h = text3.size('GAME OVER')
+txt_pos = ((W - txt_w) / 2, (H - txt_h) / 2)
+txt_km = text1.render('км/ч', True, WHITE, None)
+txt_km_pos = (740, 550)
 
 pg.display.set_icon(pg.image.load('img/car.png'))
 pg.display.set_caption('Автомагистраль')
@@ -201,16 +207,22 @@ def speedometer():
         pg.draw.line(screen, WHITE,
                      [W - radius * cos, H - radius * sin],
                      [W - (radius - 20) * cos, H - (radius - 20) * sin], 2)
-        screen.blit(txt.render(str(value), True, WHITE, None),
+        screen.blit(text2.render(str(value), True, WHITE, None),
                     (W - (radius - 30) * cos, H - (radius - 30) * sin))
         value += 100
-    screen.blit(text.render('км/ч', True, WHITE, None), (740, 550))
+    screen.blit(txt_km, txt_km_pos)
     s = abs(30 - player.velocity.y * 14 if player.velocity.y <= 0 else 24 - player.velocity.y * 14)
     cos = math.cos(math.radians(s))
     sin = math.sin(math.radians(s))
     pg.draw.line(screen, (255, 0, 0),  [W, H],
                  [W - (radius - 10) * cos, H - (radius - 10) * sin], 4)
     pg.draw.circle(screen, WHITE, [W, H], 25, 0)
+
+
+def game_over():
+    screen.blit(txt, txt_pos)
+    pg.display.update()
+    pg.time.wait(3000)
 
 
 game = True
@@ -307,10 +319,11 @@ while game:
     pg.draw.rect(screen, (R, G, B), (730, 55, -20, -level))
     speedometer()
     screen.blit(fuel_image, (700, 5))
-    screen.blit(text.render(f'Аварий: {car_accident} Проехало машин: {drove_cars}',
-                            True, pg.Color('lime green'), BG), (50, 570))
-    screen.blit(txt.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
+    screen.blit(text1.render(f'Аварий: {car_accident} Проехало машин: {drove_cars}',
+                             True, pg.Color('lime green'), BG), (50, 570))
+    screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
     pg.display.update()
 
+game_over()
 print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
 sys.exit(0)
