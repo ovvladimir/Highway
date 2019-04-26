@@ -41,7 +41,7 @@ pg.init()
 u1_event = pg.USEREVENT + 1
 pg.time.set_timer(u1_event, 350)
 u2_event = pg.USEREVENT + 2
-pg.time.set_timer(u2_event, 28000)
+pg.time.set_timer(u2_event, 27000)
 
 text = pg.font.SysFont('Arial', 24, True, True)
 txt = pg.font.SysFont('Arial', 16, True, False)
@@ -226,7 +226,7 @@ while game:
         elif e.type == u2_event:
             canister.add(canisters)
             all_sprites.add(canister, layer=1)
-            pg.time.set_timer(u2_event, random.randrange(7000, 28001, 5000))
+            pg.time.set_timer(u2_event, random.randrange(7000, 27001, 5000))
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
