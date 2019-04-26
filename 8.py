@@ -196,17 +196,15 @@ all_sprites.add(trees, layer=4)
 def speedometer():
     value = 0
     for deg in range(5, 84, 6):
+        length = 20 if deg == 5 or deg == 23 or deg == 41 or deg == 59 or deg == 77 else 10
         cos = math.cos(math.radians(deg))
         sin = math.sin(math.radians(deg))
         pg.draw.line(screen, WHITE,
                      [W - radius * cos, H - radius * sin],
-                     [W - (radius - 10) * cos, H - (radius - 10) * sin], 2)
-    for deg in range(5, 78, 18):
+                     [W - (radius - length) * cos, H - (radius - length) * sin], 2)
+    for deg in range(9, 78, 17):
         cos = math.cos(math.radians(deg))
         sin = math.sin(math.radians(deg))
-        pg.draw.line(screen, WHITE,
-                     [W - radius * cos, H - radius * sin],
-                     [W - (radius - 20) * cos, H - (radius - 20) * sin], 2)
         screen.blit(text2.render(str(value), True, WHITE, None),
                     (W - (radius - 30) * cos, H - (radius - 30) * sin))
         value += 100
