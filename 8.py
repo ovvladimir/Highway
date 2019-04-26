@@ -195,13 +195,13 @@ all_sprites.add(trees, layer=4)
 
 def speedometer():
     value = 0
-    for deg in range(5, 85, 6):
+    for deg in range(5, 84, 6):
         cos = math.cos(math.radians(deg))
         sin = math.sin(math.radians(deg))
         pg.draw.line(screen, WHITE,
                      [W - radius * cos, H - radius * sin],
                      [W - (radius - 10) * cos, H - (radius - 10) * sin], 2)
-    for deg in range(5, 91, 18):
+    for deg in range(5, 78, 18):
         cos = math.cos(math.radians(deg))
         sin = math.sin(math.radians(deg))
         pg.draw.line(screen, WHITE,
@@ -229,7 +229,8 @@ game = True
 while game:
     clock.tick(FPS)
     if pg.event.get(pg.QUIT):
-        break
+        game = False
+        sys.exit(0)
     for e in pg.event.get():
         if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
             game = False
