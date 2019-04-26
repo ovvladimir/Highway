@@ -226,7 +226,7 @@ while game:
         elif e.type == u2_event:
             canister.add(canisters)
             all_sprites.add(canister, layer=1)
-            pg.time.set_timer(u2_event, random.randrange(8000, 28001, 5000))
+            pg.time.set_timer(u2_event, random.randrange(7000, 28001, 5000))
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
@@ -288,7 +288,7 @@ while game:
         canister.rect.center = random.randrange(W/2+80, W, 80), - canister.h
         level = 40
     if player.position.x > W / 2:
-        level -= 0.01
+        level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
     else:
         level -= 0.02
     if level < 0 or car_accident >= 10:
