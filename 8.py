@@ -19,6 +19,8 @@ level = 40
 R, G, B = 0, 255, 0
 radius = 140
 
+image_btn1 = pg.image.load('img/btn_play.png')
+image_btn2 = pg.image.load('img/btn_exit.png')
 player_image = pg.image.load('img/Car.png')
 fuel_image = pg.image.load('img/fuel.png')
 canister_image = pg.image.load('img/canister.png')
@@ -49,11 +51,11 @@ text3 = pg.font.SysFont('Arial', 50, True, True)
 txt = text3.render('GAME OVER', True, pg.Color('red'), None)
 txt_w, txt_h = text3.size('GAME OVER')
 txt_pos = ((W - txt_w) / 2, (H - txt_h) / 2)
-txt_km = text1.render('км/ч', True, WHITE, None)
-txt_km_pos = (740, 550)
+txt_km = text2.render('km/h', True, WHITE, None)
+txt_km_pos = (745, 550)
 
 pg.display.set_icon(pg.image.load('img/car.png'))
-pg.display.set_caption('Автомагистраль')
+pg.display.set_caption('Motorway')
 pg.mouse.set_visible(False)
 screen = pg.display.set_mode((W, H))
 
@@ -218,23 +220,26 @@ def speedometer():
 
 
 def game_over():
+    global play, stop
+    pg.mouse.set_visible(True)
+    pg.draw.ellipse(screen, pg.Color('lime green'), (100, 50, 600, 500), 0)
     screen.blit(txt, txt_pos)
-    pg.display.update()
-    pg.time.wait(3000)
+    play = screen.blit(image_btn1, ((W-image_btn1.get_width())/2, (H-image_btn1.get_height())/2-100))
+    stop = screen.blit(image_btn2, ((W-image_btn2.get_width())/2, (H-image_btn2.get_height())/2+100))
 
 
+stop = 0
 game = True
 while game:
     clock.tick(FPS)
     if pg.event.get(pg.QUIT):
-        game = False
-        sys.exit(0)
+        break
     for e in pg.event.get():
         if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
             game = False
-        elif e.type == u1_event:
+        elif e.type == u1_event and stop == 0:
             car.render()
-        elif e.type == u2_event:
+        elif e.type == u2_event and stop == 0:
             canister.add(canisters)
             all_sprites.add(canister, layer=1)
             pg.time.set_timer(u2_event, random.randrange(7000, 27001, 5000))
@@ -244,6 +249,17 @@ while game:
                 screen = pg.display.set_mode((W, H))
             elif fscreen[0] == 2:
                 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+        elif e.type == pg.MOUSEBUTTONDOWN:
+            if e.button == 1:
+                pos = e.pos
+                if play.collidepoint(pos):
+                    pg.mouse.set_visible(False)
+                    car_accident = 0
+                    drove_cars = 0
+                    level = 40
+                    stop = 0
+                elif stop.collidepoint(pos):
+                    game = False
 
     keys = pg.key.get_pressed()
     if keys[pg.K_RIGHT]:
@@ -298,13 +314,14 @@ while game:
     elif pg.sprite.spritecollide(player, canisters, True):
         canister.rect.center = random.randrange(W/2+80, W, 80), - canister.h
         level = 40
+
     if player.position.x > W / 2:
         level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
     else:
         level -= 0.02
     if level < 0 or car_accident >= 10:
-        print('Game over')
-        break
+        stop = 1
+        game_over()
     if level <= 10:
         R, G = 255, 0
     elif 10 < level < 15:
@@ -312,17 +329,17 @@ while game:
     else:
         R, G = 0, 255
 
-    screen.fill(BG)
-    all_sprites.update()
-    all_sprites.draw(screen)
-    pg.draw.rect(screen, (R, G, B), (730, 55, -20, -level))
-    speedometer()
-    screen.blit(fuel_image, (700, 5))
-    screen.blit(text1.render(f'Аварий: {car_accident} Проехало машин: {drove_cars}',
+    if stop == 0:
+        screen.fill(BG)
+        all_sprites.update()
+        all_sprites.draw(screen)
+        pg.draw.rect(screen, (R, G, B), (730, 55, -20, -level))
+        speedometer()
+        screen.blit(fuel_image, (700, 5))
+        screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
+    screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
                              True, pg.Color('lime green'), BG), (50, 570))
-    screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
     pg.display.update()
 
-game_over()
 print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
 sys.exit(0)
