@@ -251,14 +251,13 @@ while game:
                 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
         elif e.type == pg.MOUSEBUTTONDOWN:
             if e.button == 1:
-                pos = e.pos
-                if play.collidepoint(pos):
+                if play.collidepoint(e.pos):
                     pg.mouse.set_visible(False)
                     car_accident = 0
                     drove_cars = 0
                     level = 40
                     stop = 0
-                elif stop.collidepoint(pos):
+                elif stop.collidepoint(e.pos):
                     game = False
 
     keys = pg.key.get_pressed()
