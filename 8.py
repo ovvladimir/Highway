@@ -223,7 +223,6 @@ def speedometer():
 
 def game_over():
     global play, out
-    pg.mouse.set_visible(True)
     pg.draw.ellipse(screen, pg.Color('lime green'), (100, 50, 600, 500), 0)
     screen.blit(txt, txt_pos)
     play = screen.blit(image_btn1, ((W-image_btn1.get_width())/2, (H-image_btn1.get_height())/2-100))
@@ -319,6 +318,7 @@ while game:
     else:
         level -= 0.02
     if level < 0 or car_accident >= 10:
+        pg.mouse.set_visible(True)
         stop = 1
         game_over()
     if level <= 10:
