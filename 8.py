@@ -18,6 +18,8 @@ fscreen = [1, 2]
 level = 40
 R, G, B = 0, 255, 0
 radius = 140
+stop = 0
+game = True
 
 image_btn1 = pg.image.load('img/btn_play.png')
 image_btn2 = pg.image.load('img/btn_exit.png')
@@ -220,16 +222,14 @@ def speedometer():
 
 
 def game_over():
-    global play, stop
+    global play, out
     pg.mouse.set_visible(True)
     pg.draw.ellipse(screen, pg.Color('lime green'), (100, 50, 600, 500), 0)
     screen.blit(txt, txt_pos)
     play = screen.blit(image_btn1, ((W-image_btn1.get_width())/2, (H-image_btn1.get_height())/2-100))
-    stop = screen.blit(image_btn2, ((W-image_btn2.get_width())/2, (H-image_btn2.get_height())/2+100))
+    out = screen.blit(image_btn2, ((W-image_btn2.get_width())/2, (H-image_btn2.get_height())/2+100))
 
 
-stop = 0
-game = True
 while game:
     clock.tick(FPS)
     if pg.event.get(pg.QUIT):
@@ -257,7 +257,7 @@ while game:
                     drove_cars = 0
                     level = 40
                     stop = 0
-                elif stop.collidepoint(e.pos):
+                elif out.collidepoint(e.pos):
                     game = False
 
     keys = pg.key.get_pressed()
