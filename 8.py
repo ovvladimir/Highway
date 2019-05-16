@@ -89,7 +89,7 @@ class Car(pg.sprite.Sprite):
         self.h = image.get_height()
         self.w = image.get_width() // 2
         self.rect = self.image.get_rect(center=(self.x, self.y))
-        self.add(group)
+        group.add(self)
         self.speed = random.randint(3, 5)
 
     def render(self):
@@ -144,7 +144,7 @@ class Background(pg.sprite.Sprite):
                              [40+xx*80, 0 if xx == 0 or xx == 4 or xx == 5 or xx == 9 else 10+yy*60],
                              [40+xx*80, 600 if xx == 0 or xx == 4 or xx == 5 or xx == 9 else 50+yy*60], 5)
         self.speed = speed
-        self.add(group)
+        group.add(self)
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
@@ -170,7 +170,6 @@ class Varia(pg.sprite.Sprite):
             self.rect.y = - H
             if self is canister:
                 self.kill()
-                self.rect.center = random.randrange(W/2+80, W, 80), - self.h
 
 
 cars = pg.sprite.Group()
@@ -184,7 +183,7 @@ for i in range(2):
 for ix in range(3):
     for iy in range(6):
         tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
-        tree.add(trees)
+        trees.add(tree)
 canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  y=-canister_image.get_height(), image=canister_image,
                  h=canister_image.get_height())
@@ -239,8 +238,9 @@ while game:
         elif e.type == u1_event and stop == 0:
             car.render()
         elif e.type == u2_event and stop == 0:
-            canister.add(canisters)
+            canisters.add(canister)
             all_sprites.add(canister, layer=1)
+            canister.rect.center = random.randrange(W/2+80, W, 80), - canister.h
             pg.time.set_timer(u2_event, random.randrange(7000, 27001, 5000))
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
@@ -310,7 +310,6 @@ while game:
         player.angle = -60
         player.velocity.y = speed
     elif pg.sprite.spritecollide(player, canisters, True):
-        canister.rect.center = random.randrange(W/2+80, W, 80), - canister.h
         level = 40
 
     if player.position.x > W / 2:
