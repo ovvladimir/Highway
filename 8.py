@@ -71,7 +71,6 @@ sound_car_accident = pg.mixer.Sound('sound/accident.wav')
 sound_canister = pg.mixer.Sound('sound/canister.wav')
 sound_length = sound_canister.get_length() * 1000
 sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
-sound_start.play()
 if os.name is 'nt':
     pg.mixer.music.load('sound/fon.mp3')
     pg.mixer.music.play(-1)
@@ -268,9 +267,12 @@ while game:
                 screen = pg.display.set_mode((W, H))
             elif fscreen[0] == 2:
                 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+            if start == 1:
+                game_over()
         elif e.type == pg.MOUSEBUTTONDOWN:
             if e.button == 1:
                 if play.collidepoint(e.pos):
+                    sound_start.play()
                     all_sprites.add(player, layer=3)
                     pg.mouse.set_visible(False)
                     car_accident = 0
