@@ -68,10 +68,10 @@ screen = pg.display.set_mode((W, H))
 pg.mixer.pre_init(44100, -16, 2, 1024)
 tick = pg.mixer.Sound('sound/ticking.wav')
 sound_car_accident = pg.mixer.Sound('sound/accident.wav')
-sound_kanistra = pg.mixer.Sound('sound/kanistra.wav')
+sound_canister = pg.mixer.Sound('sound/canister.wav')
 sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
 sound_start.play()
-if os.name is not 'nt':
+if os.name is 'nt':
     pg.mixer.music.load('sound/fon.mp3')
     pg.mixer.music.play(-1)
 else:
@@ -92,9 +92,9 @@ class Player(pg.sprite.Sprite):
 
     def update(self):
         self.image = pg.transform.rotate(self.orig_image, self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
         self.position += self.velocity
         self.rect.center = self.position
-        self.rect = self.image.get_rect(center=self.rect.center)
 
 
 class Car(pg.sprite.Sprite):
@@ -206,11 +206,9 @@ canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  h=canister_image.get_height())
 
 canisters = pg.sprite.Group(canister)
-canister.kill()
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=0)
 all_sprites.add(cars, layer=2)
-all_sprites.add(player, layer=3)
 all_sprites.add(trees, layer=4)
 
 
@@ -272,6 +270,7 @@ while game:
         elif e.type == pg.MOUSEBUTTONDOWN:
             if e.button == 1:
                 if play.collidepoint(e.pos):
+                    all_sprites.add(player, layer=3)
                     pg.mouse.set_visible(False)
                     car_accident = 0
                     drove_cars = 0
@@ -335,7 +334,7 @@ while game:
         player.velocity.y = speed
     elif pg.sprite.spritecollide(player, canisters, True):
         tick.stop()
-        sound_kanistra.play()
+        sound_canister.play()
         level = 40
 
     if player.position.x > W / 2:
@@ -343,6 +342,7 @@ while game:
     else:
         level -= 0.02
     if level < 0 or car_accident >= 10:
+        all_sprites.remove(player)
         pg.mouse.set_visible(True)
         stop = 1
         game_over()
