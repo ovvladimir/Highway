@@ -69,6 +69,7 @@ pg.mixer.pre_init(44100, -16, 2, 1024)
 tick = pg.mixer.Sound('sound/ticking.wav')
 sound_car_accident = pg.mixer.Sound('sound/accident.wav')
 sound_canister = pg.mixer.Sound('sound/canister.wav')
+sound_length = sound_canister.get_length() * 1000
 sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
 sound_start.play()
 if os.name is 'nt':
@@ -334,7 +335,7 @@ while game:
         player.velocity.y = speed
     elif pg.sprite.spritecollide(player, canisters, True):
         tick.stop()
-        sound_canister.play()
+        sound_canister.play(maxtime=int(sound_length-level*40))
         level = 40
 
     if player.position.x > W / 2:
