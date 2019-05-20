@@ -18,7 +18,8 @@ fscreen = [1, 2]
 level = 40
 R, G, B = 0, 255, 0
 radius = 140
-stop = 0
+stop = 1
+start = 1
 game = True
 
 image_btn1 = pg.image.load('img/btn_play.png')
@@ -53,13 +54,26 @@ text3 = pg.font.SysFont('Arial', 50, True, True)
 txt = text3.render('GAME OVER', True, pg.Color('red'), None)
 txt_w, txt_h = text3.size('GAME OVER')
 txt_pos = ((W - txt_w) / 2, (H - txt_h) / 2)
+txt2 = text3.render('MOTORWAY', True, pg.Color('blue'), None)
+txt2_w, txt2_h = text3.size('MOTORWAY')
+txt2_pos = ((W - txt2_w) / 2, (H - txt2_h) / 2)
 txt_km = text2.render('km/h', True, WHITE, None)
 txt_km_pos = (745, 550)
 
 pg.display.set_icon(pg.image.load('img/car.png'))
 pg.display.set_caption('Motorway')
-pg.mouse.set_visible(False)
+pg.mouse.set_visible(True)
 screen = pg.display.set_mode((W, H))
+
+pg.mixer.pre_init(44100, -16, 2, 1024)
+tick = pg.mixer.Sound('sound/ticking.wav')
+sound_car_accident = pg.mixer.Sound('sound/accident.wav')
+sound_kanistra = pg.mixer.Sound('sound/kanistra.wav')
+sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
+sound_start.play()
+if os.name is 'nt':
+    pg.mixer.music.load('sound/fon.mp3')
+    pg.mixer.music.play(-1)
 
 
 class Player(pg.sprite.Sprite):
@@ -189,6 +203,7 @@ canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  h=canister_image.get_height())
 
 canisters = pg.sprite.Group(canister)
+canister.kill()
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=0)
 all_sprites.add(cars, layer=2)
@@ -223,11 +238,14 @@ def speedometer():
 def game_over():
     global play, out
     pg.draw.ellipse(screen, pg.Color('lime green'), (100, 50, 600, 500), 0)
-    screen.blit(txt, txt_pos)
+    if start == 1:
+        screen.blit(txt2, txt2_pos)
+    else:
+        screen.blit(txt, txt_pos)
     play = screen.blit(image_btn1, ((W-image_btn1.get_width())/2, (H-image_btn1.get_height())/2-100))
     out = screen.blit(image_btn2, ((W-image_btn2.get_width())/2, (H-image_btn2.get_height())/2+100))
 
-
+game_over()
 while game:
     clock.tick(FPS)
     if pg.event.get(pg.QUIT):
@@ -256,6 +274,7 @@ while game:
                     drove_cars = 0
                     level = 40
                     stop = 0
+                    start = 0
                 elif out.collidepoint(e.pos):
                     game = False
 
@@ -304,12 +323,16 @@ while game:
         player.position.y = 0
 
     if pg.sprite.spritecollide(player, cars, True):
+        tick.stop()
+        sound_car_accident.play()
         player.angle = random.randrange(-65, 65, 25)
         car_accident += 1
     elif pg.sprite.spritecollideany(player, trees):
         player.angle = -60
         player.velocity.y = speed
     elif pg.sprite.spritecollide(player, canisters, True):
+        tick.stop()
+        sound_kanistra.play()
         level = 40
 
     if player.position.x > W / 2:
@@ -320,8 +343,11 @@ while game:
         pg.mouse.set_visible(True)
         stop = 1
         game_over()
+        tick.stop()
     if level <= 10:
         R, G = 255, 0
+        if stop == 0:
+            tick.play()
     elif 10 < level < 15:
         R, G = 255, 255
     else:
@@ -336,7 +362,7 @@ while game:
         screen.blit(fuel_image, (700, 5))
         screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
     screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
-                             True, pg.Color('lime green'), BG), (50, 570))
+                             True, pg.Color('lime green'), None if start == 1 else BG), (50, 570))
     pg.display.update()
 
 print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
