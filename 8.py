@@ -71,8 +71,11 @@ sound_car_accident = pg.mixer.Sound('sound/accident.wav')
 sound_kanistra = pg.mixer.Sound('sound/kanistra.wav')
 sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
 sound_start.play()
-if os.name is 'nt':
+if os.name is not 'nt':
     pg.mixer.music.load('sound/fon.mp3')
+    pg.mixer.music.play(-1)
+else:
+    pg.mixer.music.load('sound/motorway.wav')
     pg.mixer.music.play(-1)
 
 
