@@ -19,7 +19,7 @@ level = 40
 R, G, B = 0, 255, 0
 radius = 140
 stop = 1
-start = 1
+start = True
 game = True
 
 image_btn1 = pg.image.load('img/btn_play.png')
@@ -46,7 +46,7 @@ pg.init()
 u1_event = pg.USEREVENT + 1
 pg.time.set_timer(u1_event, 350)
 u2_event = pg.USEREVENT + 2
-pg.time.set_timer(u2_event, 27000)
+pg.time.set_timer(u2_event, random.randrange(7000, 27001, 5000))
 
 text1 = pg.font.SysFont('Arial', 24, True, True)
 text2 = pg.font.SysFont('Arial', 16, True, False)
@@ -238,15 +238,15 @@ def speedometer():
 
 def game_over():
     global play, out
+    screen.fill(BG)
     pg.draw.ellipse(screen, pg.Color('lime green'), (100, 50, 600, 500), 0)
-    if start == 1:
+    if start:
         screen.blit(txt2, txt2_pos)
     else:
         screen.blit(txt, txt_pos)
     play = screen.blit(image_btn1, ((W-image_btn1.get_width())/2, (H-image_btn1.get_height())/2-100))
     out = screen.blit(image_btn2, ((W-image_btn2.get_width())/2, (H-image_btn2.get_height())/2+100))
 
-game_over()
 while game:
     clock.tick(FPS)
     if pg.event.get(pg.QUIT):
@@ -267,99 +267,98 @@ while game:
                 screen = pg.display.set_mode((W, H))
             elif fscreen[0] == 2:
                 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
-            if start == 1:
-                game_over()
         elif e.type == pg.MOUSEBUTTONDOWN:
             if e.button == 1:
                 if play.collidepoint(e.pos):
                     sound_start.play()
-                    all_sprites.add(player, layer=3)
                     pg.mouse.set_visible(False)
+                    all_sprites.add(player, layer=3)
+                    player.position.x = W/2+80
+                    player.position.y = H/2
                     car_accident = 0
                     drove_cars = 0
                     level = 40
                     stop = 0
-                    start = 0
+                    start = False
                 elif out.collidepoint(e.pos):
                     game = False
 
-    keys = pg.key.get_pressed()
-    if keys[pg.K_RIGHT]:
-        player.velocity.x = speed
-        player.angle -= 1
-        if player.angle < -20:
-            player.angle = -20
-    elif keys[pg.K_LEFT]:
-        player.velocity.x = -speed
-        player.angle += 1
-        if player.angle > 20:
-            player.angle = 20
-    else:
-        player.velocity.x = 0
-        if player.angle < 0:
-            player.angle += 1
-        elif player.angle > 0:
-            player.angle -= 1
-    if keys[pg.K_UP]:
-        player.velocity.y -= acceleration
-        if player.velocity.y < -speed * 2:
-            player.velocity.y = -speed * 2
-    elif keys[pg.K_DOWN]:
-        player.velocity.y += acceleration
-        if player.velocity.y > speed + 1:
-            player.velocity.y = speed + 1
-    else:
-        if player.velocity.y < 0:
-            player.velocity.y += acceleration
-            if player.velocity.y > 0:
-                player.velocity.y = 0
-        elif player.velocity.y > 0:
-            player.velocity.y -= acceleration
-            if player.velocity.y < 0:
-                player.velocity.y = 0
-
-    if player.position.x > W - 40:
-        player.position.x = W - 40
-    elif player.position.x < 40:
-        player.position.x = 40
-    elif player.position.y > H:
-        player.position.y = H
-    elif player.position.y < 0:
-        player.position.y = 0
-
-    if pg.sprite.spritecollide(player, cars, True):
-        tick.stop()
-        sound_car_accident.play()
-        player.angle = random.randrange(-65, 65, 25)
-        car_accident += 1
-    elif pg.sprite.spritecollideany(player, trees):
-        player.angle = -60
-        player.velocity.y = speed
-    elif pg.sprite.spritecollide(player, canisters, True):
-        tick.stop()
-        sound_canister.play(maxtime=int(sound_length-level*40))
-        level = 40
-
-    if player.position.x > W / 2:
-        level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
-    else:
-        level -= 0.02
-    if level < 0 or car_accident >= 10:
-        all_sprites.remove(player)
-        pg.mouse.set_visible(True)
-        stop = 1
-        game_over()
-        tick.stop()
-    if level <= 10:
-        R, G = 255, 0
-        if stop == 0:
-            tick.play()
-    elif 10 < level < 15:
-        R, G = 255, 255
-    else:
-        R, G = 0, 255
-
     if stop == 0:
+        keys = pg.key.get_pressed()
+        if keys[pg.K_RIGHT]:
+            player.velocity.x = speed
+            player.angle -= 1
+            if player.angle < -20:
+                player.angle = -20
+        elif keys[pg.K_LEFT]:
+            player.velocity.x = -speed
+            player.angle += 1
+            if player.angle > 20:
+                player.angle = 20
+        else:
+            player.velocity.x = 0
+            if player.angle < 0:
+                player.angle += 1
+            elif player.angle > 0:
+                player.angle -= 1
+        if keys[pg.K_UP]:
+            player.velocity.y -= acceleration
+            if player.velocity.y < -speed * 2:
+                player.velocity.y = -speed * 2
+        elif keys[pg.K_DOWN]:
+            player.velocity.y += acceleration
+            if player.velocity.y > speed + 1:
+                player.velocity.y = speed + 1
+        else:
+            if player.velocity.y < 0:
+                player.velocity.y += acceleration
+                if player.velocity.y > 0:
+                    player.velocity.y = 0
+            elif player.velocity.y > 0:
+                player.velocity.y -= acceleration
+                if player.velocity.y < 0:
+                    player.velocity.y = 0
+
+        if player.position.x > W - 40:
+            player.position.x = W - 40
+        elif player.position.x < 40:
+            player.position.x = 40
+        elif player.position.y > H:
+            player.position.y = H
+        elif player.position.y < 0:
+            player.position.y = 0
+
+        if pg.sprite.spritecollide(player, cars, True):
+            tick.stop()
+            sound_car_accident.play()
+            player.angle = random.randrange(-65, 65, 25)
+            car_accident += 1
+        elif pg.sprite.spritecollideany(player, trees):
+            player.angle = -60
+            player.velocity.y = speed
+        elif pg.sprite.spritecollide(player, canisters, True):
+            tick.stop()
+            sound_canister.play(maxtime=int(sound_length-level*40))
+            level = 40
+
+        if player.position.x > W / 2:
+            level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
+        else:
+            level -= 0.02
+        if level < 0 or car_accident >= 10:
+            all_sprites.remove(player)
+            pg.mouse.set_visible(True)
+            tick.stop()
+            stop = 1
+        if level <= 10:
+            R, G = 255, 0
+            if stop == 0:
+                tick.play()
+        elif 10 < level < 15:
+            R, G = 255, 255
+        else:
+            R, G = 0, 255
+
         screen.fill(BG)
         all_sprites.update()
         all_sprites.draw(screen)
@@ -367,6 +366,8 @@ while game:
         speedometer()
         screen.blit(fuel_image, (700, 5))
         screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
+    else:
+        game_over()
     screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
                              True, pg.Color('lime green'), None if start == 1 else BG), (50, 570))
     pg.display.update()
