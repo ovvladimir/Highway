@@ -28,6 +28,7 @@ player_image = pg.image.load('img/Car.png')
 fuel_image = pg.image.load('img/fuel.png')
 canister_image = pg.image.load('img/canister.png')
 tree_image = pg.image.load('img/d.png')
+image_3 = pg.image.load('img/3.png')
 CARS = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
         pg.image.load('img/car3.png')]
 n = len(CARS)
@@ -67,6 +68,7 @@ screen = pg.display.set_mode((W, H))
 
 pg.mixer.pre_init(44100, -16, 2, 1024)
 tick = pg.mixer.Sound('sound/ticking.wav')
+sound_three = pg.mixer.Sound('sound/three.wav')
 sound_car_accident = pg.mixer.Sound('sound/accident.wav')
 sound_canister = pg.mixer.Sound('sound/canister.wav')
 sound_length = sound_canister.get_length() * 1000
@@ -131,8 +133,8 @@ class Car(pg.sprite.Sprite):
                 arr = pg.PixelArray(CARS[num])
                 arr.replace(original_Color, pg.Color(COLOR[random.randint(0, len(COLOR)-1)]), 0.1)
                 del arr
-            car_new = Car(car_x, car_y, CARS[num], car_dy, cars)
-            all_sprites.add(car_new, layer=2)
+            Car(car_x, car_y, CARS[num], car_dy, cars)
+            all_sprites.add(cars, layer=2)
 
     def update(self):
         global drove_cars
@@ -185,7 +187,7 @@ class Varia(pg.sprite.Sprite):
         self.rect.y += self.speed
         if self.rect.y >= H:
             self.rect.y = - H
-            if self is canister:
+            if self is canister or self is three:
                 self.kill()
 
 
@@ -204,11 +206,13 @@ for ix in range(3):
 canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  y=-canister_image.get_height(), image=canister_image,
                  h=canister_image.get_height())
+three = Varia(x=random.randrange(80, W/2, 80)-image_3.get_width()/2,
+              y=-image_3.get_height(), image=image_3, h=image_3.get_height())
 
 canisters = pg.sprite.Group(canister)
+threes = pg.sprite.Group(three)
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=0)
-all_sprites.add(cars, layer=2)
 all_sprites.add(trees, layer=4)
 
 
@@ -239,13 +243,19 @@ def speedometer():
 def game_over():
     global play, out
     screen.fill(BG)
+    screen.blit(bg.image, (0, 0))
     pg.draw.ellipse(screen, pg.Color('lime green'), (100, 50, 600, 500), 0)
     if start:
         screen.blit(txt2, txt2_pos)
     else:
         screen.blit(txt, txt_pos)
+    screen.blit(image_3, (80-image_3.get_width()/2, 20))
+    screen.blit(canister_image, (W-80-canister_image.get_width()/2, 20))
+    screen.blit(text1.render('-3 car accident', True, pg.Color('lime green'), BG), (115, 25))
+    screen.blit(text1.render('+40 liters', True, pg.Color('lime green'), BG), (580, 25))
     play = screen.blit(image_btn1, ((W-image_btn1.get_width())/2, (H-image_btn1.get_height())/2-100))
     out = screen.blit(image_btn2, ((W-image_btn2.get_width())/2, (H-image_btn2.get_height())/2+100))
+
 
 while game:
     clock.tick(FPS)
@@ -260,7 +270,12 @@ while game:
             canisters.add(canister)
             all_sprites.add(canister, layer=1)
             canister.rect.center = random.randrange(W/2+80, W, 80), - canister.h
-            pg.time.set_timer(u2_event, random.randrange(7000, 27001, 5000))
+            timer = random.randrange(7000, 27001, 5000)
+            pg.time.set_timer(u2_event, timer)
+            if timer >= 17000:
+                threes.add(three)
+                all_sprites.add(three, layer=1)
+                three.rect.center = random.randrange(80, W/2, 80), - three.h * 10
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
@@ -275,6 +290,8 @@ while game:
                     all_sprites.add(player, layer=3)
                     player.position.x = W/2+80
                     player.position.y = H/2
+                    player.angle = 0
+                    player.update()
                     car_accident = 0
                     drove_cars = 0
                     level = 40
@@ -333,13 +350,18 @@ while game:
             sound_car_accident.play()
             player.angle = random.randrange(-65, 65, 25)
             car_accident += 1
-        elif pg.sprite.spritecollideany(player, trees):
+        if pg.sprite.spritecollideany(player, trees):
             player.angle = -60
             player.velocity.y = speed
-        elif pg.sprite.spritecollide(player, canisters, True):
+        if pg.sprite.spritecollide(player, canisters, True):
             tick.stop()
             sound_canister.play(maxtime=int(sound_length-level*40))
             level = 40
+        if pg.sprite.spritecollide(player, threes, True):
+            if car_accident >= 3:
+                tick.stop()
+                sound_three.play()
+                car_accident -= 3
 
         if player.position.x > W / 2:
             level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
@@ -347,6 +369,9 @@ while game:
             level -= 0.02
         if level < 0 or car_accident >= 10:
             all_sprites.remove(player)
+            cars.empty()
+            canister.kill()
+            three.kill()
             pg.mouse.set_visible(True)
             tick.stop()
             stop = 1
@@ -369,7 +394,7 @@ while game:
     else:
         game_over()
     screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
-                             True, pg.Color('lime green'), None if start == 1 else BG), (50, 570))
+                             True, pg.Color('lime green'), None if stop == 1 else BG), (50, 570))
     pg.display.update()
 
 print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
