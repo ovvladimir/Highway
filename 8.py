@@ -21,6 +21,7 @@ radius = 140
 stop = 1
 start = True
 game = True
+pause = [False, True]
 
 image_btn1 = pg.image.load('img/btn_play.png')
 image_btn2 = pg.image.load('img/btn_exit.png')
@@ -58,6 +59,9 @@ txt_pos = ((W - txt_w) / 2, (H - txt_h) / 2)
 txt2 = text3.render('MOTORWAY', True, pg.Color('blue'), None)
 txt2_w, txt2_h = text3.size('MOTORWAY')
 txt2_pos = ((W - txt2_w) / 2, (H - txt2_h) / 2)
+txt3 = text1.render("key 'k' - pause", True, WHITE, None)
+txt3_w = text1.size("key 'k' - pause")[0]
+txt3_pos = ((W - txt3_w) / 2, 480)
 txt_km = text2.render('km/h', True, WHITE, None)
 txt_km_pos = (745, 550)
 
@@ -111,7 +115,7 @@ class Car(pg.sprite.Sprite):
         group.add(self)
         self.speed = random.randint(3, 5)
 
-    def render(self):
+    def create_car(self):
         global car_x, car_y, car_dy
         block = 0
         direction = random.randint(0, 1)
@@ -133,8 +137,8 @@ class Car(pg.sprite.Sprite):
                 arr = pg.PixelArray(CARS[num])
                 arr.replace(original_Color, pg.Color(COLOR[random.randint(0, len(COLOR)-1)]), 0.1)
                 del arr
-            Car(car_x, car_y, CARS[num], car_dy, cars)
-            all_sprites.add(cars, layer=2)
+            new_car = Car(car_x, car_y, CARS[num], car_dy, cars)
+            all_sprites.add(new_car, layer=2)
 
     def update(self):
         global drove_cars
@@ -196,7 +200,7 @@ roads = pg.sprite.Group()
 trees = pg.sprite.Group()
 
 player = Player(x=W/2+80, y=H/2, angle=0, image=player_image)
-car = Car(random.randrange(0, W/2, 80), 0, CARS[random.randint(0, n)], True, cars)
+car = Car(random.randrange(80, W/2, 80), 0, CARS[random.randint(0, n)], True, cars)
 for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, group=roads)
 for ix in range(3):
@@ -214,6 +218,7 @@ threes = pg.sprite.Group(three)
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=0)
 all_sprites.add(trees, layer=4)
+all_sprites.add(car, layer=2)
 
 
 def speedometer():
@@ -253,6 +258,7 @@ def game_over():
     screen.blit(canister_image, (W-80-canister_image.get_width()/2, 20))
     screen.blit(text1.render('-3 car accident', True, pg.Color('lime green'), BG), (115, 25))
     screen.blit(text1.render('+40 liters', True, pg.Color('lime green'), BG), (580, 25))
+    screen.blit(txt3, txt3_pos)
     play = screen.blit(image_btn1, ((W-image_btn1.get_width())/2, (H-image_btn1.get_height())/2-100))
     out = screen.blit(image_btn2, ((W-image_btn2.get_width())/2, (H-image_btn2.get_height())/2+100))
 
@@ -265,7 +271,7 @@ while game:
         if e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
             game = False
         elif e.type == u1_event and stop == 0:
-            car.render()
+            car.create_car()
         elif e.type == u2_event and stop == 0:
             canisters.add(canister)
             all_sprites.add(canister, layer=1)
@@ -297,8 +303,16 @@ while game:
                     level = 40
                     stop = 0
                     start = False
+                    pause = [False, True]
                 elif out.collidepoint(e.pos):
                     game = False
+        elif e.type == pg.KEYDOWN and e.key == pg.K_p:
+            if start is False:
+                pause.reverse()
+                if pause[0] is False:
+                    stop = 0
+                else:
+                    stop = 1
 
     if stop == 0:
         keys = pg.key.get_pressed()
@@ -369,6 +383,7 @@ while game:
             level -= 0.02
         if level < 0 or car_accident >= 10:
             all_sprites.remove(player)
+            all_sprites.remove_sprites_of_layer(2)
             cars.empty()
             canister.kill()
             three.kill()
@@ -392,7 +407,8 @@ while game:
         screen.blit(fuel_image, (700, 5))
         screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
     else:
-        game_over()
+        if pause[0] is False:
+            game_over()
     screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
                              True, pg.Color('lime green'), None if stop == 1 else BG), (50, 570))
     pg.display.update()
