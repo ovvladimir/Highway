@@ -299,7 +299,7 @@ while game:
                 threes.add(three)
                 all_sprites.add(three, layer=1)
                 three.rect.center = random.randrange(80, W/2, 80), - three.h * 10
-            elif timer == 7000:
+            elif timer <= 7000 + 5000 * (level_game - 1):
                 waters.add(water)
                 all_sprites.add(water, layer=1)
                 water.rect.center = random.randrange(W/2+80, W, 80), - water.h * 8
@@ -329,6 +329,7 @@ while game:
                     stop = 0
                     start = False
                     pause = [False, True]
+                    pg.mixer.music.rewind()
                 elif out.collidepoint(e.pos):
                     game = False
         elif e.type == pg.KEYDOWN and e.key == pg.K_p:
