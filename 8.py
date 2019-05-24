@@ -87,10 +87,10 @@ sound_length = sound_canister.get_length() * 1000
 sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
 if os.name is 'nt':
     pg.mixer.music.load('sound/fon.mp3')
-    pg.mixer.music.play(-1)
+    pg.mixer.music.play(loops=-1)
 else:
     pg.mixer.music.load('sound/motorway.wav')
-    pg.mixer.music.play(-1)
+    pg.mixer.music.play(loops=-1)
 
 
 class Player(pg.sprite.Sprite):
@@ -403,6 +403,9 @@ while game:
                 sound_three.play()
                 car_accident -= 3
         if pg.sprite.spritecollideany(player, waters):
+            tick.stop()
+            sound_car_accident.play()
+            sound_car_accident.fadeout(500)
             player.angle = random.randint(60, 181)
             player.position.y -= 4
             player.position.x += random.randrange(-20, 23, 6)
@@ -427,6 +430,7 @@ while game:
             cars.empty()
             canister.kill()
             three.kill()
+            water.kill()
             pg.mouse.set_visible(True)
             tick.stop()
             stop = 1
