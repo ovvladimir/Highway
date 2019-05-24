@@ -36,6 +36,7 @@ fuel_image = pg.image.load('img/fuel.png')
 canister_image = pg.image.load('img/canister.png')
 tree_image = pg.image.load('img/d.png')
 flower_image = pg.image.load('img/c.png')
+water_image = pg.image.load('img/water.png')
 image_3 = pg.image.load('img/3.png')
 CARS = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
         pg.image.load('img/car3.png')]
@@ -187,7 +188,7 @@ class Varia(pg.sprite.Sprite):
     def __init__(self, x, y, image, h):
         self.h = h
         pg.sprite.Sprite.__init__(self)
-        if image is canister_image or image is image_3:
+        if image is canister_image or image is image_3 or image is water_image:
             self.image = image
         else:
             self.image = pg.transform.scale(image, (image.get_width()//2, h//2))
@@ -198,7 +199,7 @@ class Varia(pg.sprite.Sprite):
         self.rect.y += self.speed
         if self.rect.y >= H:
             self.rect.y = - H
-            if self is canister or self is three:
+            if self is canister or self is three or self is water:
                 self.kill()
 
 
@@ -214,20 +215,23 @@ for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, group=roads)
 for ix in range(3):
     for iy in range(6):
-            tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
-            trees.add(tree)
-            flower = Varia(x=ix*380, y=-H+iy*200, image=flower_image, h=flower_image.get_height())
-            flowers.add(flower)
-            home = Varia(x=ix*380, y=-H+iy*200, image=home_images[iy], h=home_images[iy].get_height())
-            homes.add(home)
+        tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
+        trees.add(tree)
+        flower = Varia(x=ix*380, y=-H+iy*200, image=flower_image, h=flower_image.get_height())
+        flowers.add(flower)
+        home = Varia(x=ix*380, y=-H+iy*200, image=home_images[iy], h=home_images[iy].get_height())
+        homes.add(home)
 canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  y=-canister_image.get_height(), image=canister_image,
                  h=canister_image.get_height())
 three = Varia(x=random.randrange(80, W/2, 80)-image_3.get_width()/2,
               y=-image_3.get_height(), image=image_3, h=image_3.get_height())
+water = Varia(x=random.randrange(80, W/2, 80)-water_image.get_width()/2,
+              y=-water_image.get_height(), image=water_image, h=water_image.get_height())
 
 canisters = pg.sprite.Group(canister)
 threes = pg.sprite.Group(three)
+waters = pg.sprite.Group(water)
 all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=0)
 all_sprites.add(trees, layer=4)
@@ -295,6 +299,10 @@ while game:
                 threes.add(three)
                 all_sprites.add(three, layer=1)
                 three.rect.center = random.randrange(80, W/2, 80), - three.h * 10
+            elif timer == 7000:
+                waters.add(water)
+                all_sprites.add(water, layer=1)
+                water.rect.center = random.randrange(W/2+80, W, 80), - water.h * 8
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
@@ -394,6 +402,10 @@ while game:
                 tick.stop()
                 sound_three.play()
                 car_accident -= 3
+        if pg.sprite.spritecollideany(player, waters):
+            player.angle = random.randint(60, 181)
+            player.position.y -= 4
+            player.position.x += random.randrange(-20, 23, 6)
 
         if 100 <= drove_cars < 300:
             if int((str(drove_cars))[0]) == level_game:
