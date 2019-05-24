@@ -22,13 +22,20 @@ stop = 1
 start = True
 game = True
 pause = [False, True]
+level_game = 1
 
+home_images = []
+path = 'img/home'
+for file_name in os.listdir(path):
+    home_image = pg.image.load(path + os.sep + file_name)
+    home_images.append(home_image)
 image_btn1 = pg.image.load('img/btn_play.png')
 image_btn2 = pg.image.load('img/btn_exit.png')
 player_image = pg.image.load('img/Car.png')
 fuel_image = pg.image.load('img/fuel.png')
 canister_image = pg.image.load('img/canister.png')
 tree_image = pg.image.load('img/d.png')
+flower_image = pg.image.load('img/c.png')
 image_3 = pg.image.load('img/3.png')
 CARS = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
         pg.image.load('img/car3.png')]
@@ -180,10 +187,10 @@ class Varia(pg.sprite.Sprite):
     def __init__(self, x, y, image, h):
         self.h = h
         pg.sprite.Sprite.__init__(self)
-        if image is tree_image:
-            self.image = pg.transform.scale(image, (image.get_width()//2, h//2))
-        else:
+        if image is canister_image or image is image_3:
             self.image = image
+        else:
+            self.image = pg.transform.scale(image, (image.get_width()//2, h//2))
         self.speed = speed
         self.rect = self.image.get_rect(topleft=(x, y))
 
@@ -198,6 +205,8 @@ class Varia(pg.sprite.Sprite):
 cars = pg.sprite.Group()
 roads = pg.sprite.Group()
 trees = pg.sprite.Group()
+homes = pg.sprite.Group()
+flowers = pg.sprite.Group()
 
 player = Player(x=W/2+80, y=H/2, angle=0, image=player_image)
 car = Car(random.randrange(80, W/2, 80), 0, CARS[random.randint(0, n)], True, cars)
@@ -205,8 +214,12 @@ for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, group=roads)
 for ix in range(3):
     for iy in range(6):
-        tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
-        trees.add(tree)
+            tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
+            trees.add(tree)
+            flower = Varia(x=ix*380, y=-H+iy*200, image=flower_image, h=flower_image.get_height())
+            flowers.add(flower)
+            home = Varia(x=ix*380, y=-H+iy*200, image=home_images[iy], h=home_images[iy].get_height())
+            homes.add(home)
 canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  y=-canister_image.get_height(), image=canister_image,
                  h=canister_image.get_height())
@@ -293,6 +306,9 @@ while game:
                 if play.collidepoint(e.pos):
                     sound_start.play()
                     pg.mouse.set_visible(False)
+                    all_sprites.remove(homes)
+                    all_sprites.remove(flowers)
+                    all_sprites.add(trees, layer=4)
                     all_sprites.add(player, layer=3)
                     player.position.x = W/2+80
                     player.position.y = H/2
@@ -301,6 +317,7 @@ while game:
                     car_accident = 0
                     drove_cars = 0
                     level = 40
+                    level_game = 1
                     stop = 0
                     start = False
                     pause = [False, True]
@@ -364,7 +381,8 @@ while game:
             sound_car_accident.play()
             player.angle = random.randrange(-65, 65, 25)
             car_accident += 1
-        if pg.sprite.spritecollideany(player, trees):
+        if pg.sprite.spritecollideany(player, trees) or pg.sprite.spritecollideany(player, homes)\
+           or pg.sprite.spritecollideany(player, flowers):
             player.angle = -60
             player.velocity.y = speed
         if pg.sprite.spritecollide(player, canisters, True):
@@ -376,6 +394,16 @@ while game:
                 tick.stop()
                 sound_three.play()
                 car_accident -= 3
+
+        if 100 <= drove_cars < 300:
+            if int((str(drove_cars))[0]) == level_game:
+                level_game += 1
+                if level_game == 2:
+                    all_sprites.remove(trees)
+                    all_sprites.add(homes, layer=4)
+                elif level_game == 3:
+                    all_sprites.remove(homes)
+                    all_sprites.add(flowers, layer=4)
 
         if player.position.x > W / 2:
             level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
@@ -411,6 +439,7 @@ while game:
             game_over()
     screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
                              True, pg.Color('lime green'), None if stop == 1 else BG), (50, 570))
+    screen.blit(text1.render(str(level_game), True, WHITE, None), (W-25, 10))
     pg.display.update()
 
 print(f'car accident: {car_accident}\ndrove cars: {drove_cars}')
