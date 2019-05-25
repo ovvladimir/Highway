@@ -329,7 +329,8 @@ while game:
                     stop = 0
                     start = False
                     pause = [False, True]
-                    pg.mixer.music.rewind()
+                    if pg.mixer.music.get_busy() == 0:
+                        pg.mixer.music.play(-1)
                 elif out.collidepoint(e.pos):
                     game = False
         elif e.type == pg.KEYDOWN and e.key == pg.K_p:
