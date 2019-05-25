@@ -87,10 +87,8 @@ sound_length = sound_canister.get_length() * 1000
 sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
 if os.name is 'nt':
     pg.mixer.music.load('sound/fon.mp3')
-    pg.mixer.music.play(loops=-1)
 else:
     pg.mixer.music.load('sound/motorway.wav')
-    pg.mixer.music.play(loops=-1)
 
 
 class Player(pg.sprite.Sprite):
@@ -298,11 +296,11 @@ while game:
             if timer >= 17000:
                 threes.add(three)
                 all_sprites.add(three, layer=1)
-                three.rect.center = random.randrange(80, W/2, 80), - three.h * 10
+                three.rect.center = random.randrange(80, W/2, 80), - three.h * random.randint(10, 16)
             if timer <= 7000 + 5000 * (level_game - 1):
                 waters.add(water)
                 all_sprites.add(water, layer=1)
-                water.rect.center = random.randrange(W/2+80, W, 80), - water.h * 8
+                water.rect.center = random.randrange(W/2+80, W, 80), - water.h * random.randint(8, 13)
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
