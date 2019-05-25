@@ -328,9 +328,9 @@ while game:
                     start = False
                     pause = [False, True]
                     if os.name is 'nt':
-                        pg.mixer.music.play(-1)
+                        pg.mixer.music.play(loops=-1)
                     else:
-                        pg.mixer.music.play(-1)
+                        pg.mixer.music.play(loops=-1)
                 elif out.collidepoint(e.pos):
                     game = False
         elif e.type == pg.KEYDOWN and e.key == pg.K_p:
