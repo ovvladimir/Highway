@@ -329,7 +329,9 @@ while game:
                     stop = 0
                     start = False
                     pause = [False, True]
-                    if pg.mixer.music.get_busy() == 0:
+                    if os.name is 'nt':
+                        pg.mixer.music.play(-1)
+                    else:
                         pg.mixer.music.play(-1)
                 elif out.collidepoint(e.pos):
                     game = False
@@ -338,8 +340,10 @@ while game:
                 pause.reverse()
                 if pause[0] is False:
                     stop = 0
+                    pg.mixer.music.unpause()
                 else:
                     stop = 1
+                    pg.mixer.music.pause()
 
     if stop == 0:
         keys = pg.key.get_pressed()
@@ -435,6 +439,7 @@ while game:
             water.kill()
             pg.mouse.set_visible(True)
             tick.stop()
+            pg.mixer.music.stop()
             stop = 1
         if level <= 10:
             R, G = 255, 0
