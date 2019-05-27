@@ -342,6 +342,9 @@ while game:
                 else:
                     stop = 1
                     pg.mixer.music.pause()
+                    sound_car_accident.stop()
+                    sound_canister.stop()
+                    tick.stop()
 
     if stop == 0:
         keys = pg.key.get_pressed()
@@ -458,6 +461,16 @@ while game:
     else:
         if pause[0] is False:
             game_over()
+            d = open('Record/record.dat', 'r')
+            record = int(d.read())
+            d.close()
+            if record < drove_cars:
+                record = drove_cars
+                d = open('Record/record.dat', 'w')
+                d.write(str(record))
+                d.close()
+            screen.blit(text1.render(f'RECORD: {record}', True, WHITE, None),
+                                    ((W - text1.size(f'RECORD: {record}')[0]) / 2, 90))
     screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
                              True, pg.Color('lime green'), None if stop == 1 else BG), (50, 570))
     screen.blit(text1.render(str(level_game), True, WHITE, None), (W-25, 10))
