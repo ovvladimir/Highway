@@ -52,6 +52,7 @@ CARS.append(imgColor)
 FPS = 120
 clock = pg.time.Clock()
 
+# pg.mixer.pre_init(44100, -16, 2, 2048)
 pg.init()
 u1_event = pg.USEREVENT + 1
 pg.time.set_timer(u1_event, 350)
@@ -78,7 +79,6 @@ pg.display.set_caption('Motorway')
 pg.mouse.set_visible(True)
 screen = pg.display.set_mode((W, H))
 
-pg.mixer.pre_init(44100, -16, 2, 1024)
 tick = pg.mixer.Sound('sound/ticking.wav')
 sound_three = pg.mixer.Sound('sound/three.wav')
 sound_car_accident = pg.mixer.Sound('sound/accident.wav')
