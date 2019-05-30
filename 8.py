@@ -194,11 +194,23 @@ class Varia(pg.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
+        global level_game
         self.rect.y += self.speed
         if self.rect.y >= H:
-            self.rect.y = - H
             if self is canister or self is three or self is water:
                 self.kill()
+            if self in trees and level_game == 2:
+                index = random.randint(0, 5)
+                home = Varia(x=self.rect.x, y=self.rect.y, image=home_images[index], h=home_images[index].get_height())
+                self.kill()
+                homes.add(home)
+                all_sprites.add(home, layer=4)
+            elif self in homes and level_game == 3:
+                flower = Varia(x=self.rect.x, y=self.rect.y, image=flower_image, h=flower_image.get_height())
+                self.kill()
+                flowers.add(flower)
+                all_sprites.add(flower, layer=4)
+            self.rect.y = - H
 
 
 cars = pg.sprite.Group()
@@ -206,19 +218,12 @@ roads = pg.sprite.Group()
 trees = pg.sprite.Group()
 homes = pg.sprite.Group()
 flowers = pg.sprite.Group()
+all_sprites = pg.sprite.LayeredUpdates()
 
 player = Player(x=W/2+80, y=H/2, angle=0, image=player_image)
 car = Car(random.randrange(80, W/2, 80), 0, CARS[random.randint(0, n)], True, cars)
 for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, group=roads)
-for ix in range(3):
-    for iy in range(6):
-        tree = Varia(x=ix*380, y=-H+iy*200, image=tree_image, h=tree_image.get_height())
-        trees.add(tree)
-        flower = Varia(x=ix*380, y=-H+iy*200, image=flower_image, h=flower_image.get_height())
-        flowers.add(flower)
-        home = Varia(x=ix*380, y=-H+iy*200, image=home_images[iy], h=home_images[iy].get_height())
-        homes.add(home)
 canister = Varia(x=random.randrange(W/2+80, W, 80)-canister_image.get_width()/2,
                  y=-canister_image.get_height(), image=canister_image,
                  h=canister_image.get_height())
@@ -230,9 +235,7 @@ water = Varia(x=random.randrange(80, W/2, 80)-water_image.get_width()/2,
 canisters = pg.sprite.Group(canister)
 threes = pg.sprite.Group(three)
 waters = pg.sprite.Group(water)
-all_sprites = pg.sprite.LayeredUpdates()
 all_sprites.add(roads, layer=0)
-all_sprites.add(trees, layer=4)
 all_sprites.add(car, layer=2)
 
 
@@ -312,12 +315,15 @@ while game:
                 if play.collidepoint(e.pos):
                     sound_start.play()
                     pg.mouse.set_visible(False)
-                    all_sprites.remove(homes)
-                    all_sprites.remove(flowers)
-                    all_sprites.add(trees, layer=4)
+                    for nx in range(3):
+                        for ny in range(6):
+                            tree = Varia(x=nx*380, y=-H+ny*200, image=tree_image, h=tree_image.get_height())
+                            trees.add(tree)
+                            all_sprites.add(tree, layer=4)
+                    all_sprites.add(roads, layer=0)
                     all_sprites.add(player, layer=3)
-                    player.position.x = W/2+80
-                    player.position.y = H/2
+                    player.position.x = W / 2+80
+                    player.position.y = H / 2
                     player.angle = 0
                     player.update()
                     car_accident = 0
@@ -420,21 +426,17 @@ while game:
         if 100 <= drove_cars < 300:
             if int((str(drove_cars))[0]) == level_game:
                 level_game += 1
-                if level_game == 2:
-                    all_sprites.remove(trees)
-                    all_sprites.add(homes, layer=4)
-                elif level_game == 3:
-                    all_sprites.remove(homes)
-                    all_sprites.add(flowers, layer=4)
 
         if player.position.x > W / 2:
             level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
         else:
             level -= 0.02
         if level < 0 or car_accident >= 10:
-            all_sprites.remove(player)
-            all_sprites.remove_sprites_of_layer(2)
+            all_sprites.empty()
             cars.empty()
+            trees.empty()
+            homes.empty()
+            flowers.empty()
             canister.kill()
             three.kill()
             water.kill()
