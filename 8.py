@@ -299,11 +299,11 @@ while game:
             if timer >= 17000:
                 threes.add(three)
                 all_sprites.add(three, layer=1)
-                three.rect.center = random.randrange(80, W/2, 80), - three.h * random.randint(10, 16)
+                three.rect.center = random.randrange(80, W/2, 80), - three.h * random.randint(20, 30)
             if timer <= 7000 + 5000 * (level_game - 1):
                 waters.add(water)
                 all_sprites.add(water, layer=1)
-                water.rect.center = random.randrange(W/2+80, W, 80), - water.h * random.randint(8, 13)
+                water.rect.center = random.randrange(W/2+80, W, 80), - water.h * random.randint(15, 20)
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
@@ -415,7 +415,7 @@ while game:
                 tick.stop()
                 sound_three.play()
                 car_accident -= 3
-        if pg.sprite.spritecollideany(player, waters):
+        if pg.sprite.spritecollideany(player, waters, pg.sprite.collide_circle_ratio(0.8)):
             tick.stop()
             sound_car_accident.play()
             sound_car_accident.fadeout(500)
