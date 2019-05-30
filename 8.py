@@ -410,7 +410,7 @@ while game:
             tick.stop()
             sound_canister.play(maxtime=int(sound_length-level*40))
             level = 40
-        if pg.sprite.spritecollide(player, threes, True):
+        if pg.sprite.spritecollide(player, threes, True, pg.sprite.collide_circle_ratio(1.0)):
             if car_accident >= 3:
                 tick.stop()
                 sound_three.play()
