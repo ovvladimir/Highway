@@ -235,7 +235,6 @@ water = Varia(x=random.randrange(80, W/2, 80)-water_image.get_width()/2,
 canisters = pg.sprite.Group(canister)
 threes = pg.sprite.Group(three)
 waters = pg.sprite.Group(water)
-all_sprites.add(roads, layer=0)
 all_sprites.add(car, layer=2)
 
 
@@ -322,8 +321,7 @@ while game:
                             all_sprites.add(tree, layer=4)
                     all_sprites.add(roads, layer=0)
                     all_sprites.add(player, layer=3)
-                    player.position.x = W / 2+80
-                    player.position.y = H / 2
+                    player.position.x, player.position.y = W / 2 + 80, H / 2
                     player.angle = 0
                     player.update()
                     car_accident = 0
@@ -333,10 +331,7 @@ while game:
                     stop = 0
                     start = False
                     pause = [False, True]
-                    if os.name is 'nt':
-                        pg.mixer.music.play(loops=-1)
-                    else:
-                        pg.mixer.music.play(loops=-1)
+                    pg.mixer.music.play(loops=-1)
                 elif out.collidepoint(e.pos):
                     game = False
         elif e.type == pg.KEYDOWN and e.key == pg.K_p:
