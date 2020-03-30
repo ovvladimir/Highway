@@ -65,13 +65,13 @@ text2 = pg.font.SysFont('Arial', 16, True, False)
 text3 = pg.font.SysFont('Arial', 50, True, True)
 txt = text3.render('GAME OVER', True, pg.Color('red'), None)
 txt_w, txt_h = text3.size('GAME OVER')
-txt_pos = ((W - txt_w) / 2.0, (H - txt_h) / 2.0)
+txt_pos = ((W - txt_w) // 2, (H - txt_h) // 2)
 txt2 = text3.render('MOTORWAY', True, pg.Color('blue'), None)
 txt2_w, txt2_h = text3.size('MOTORWAY')
-txt2_pos = ((W - txt2_w) / 2.0, (H - txt2_h) / 2.0)
+txt2_pos = ((W - txt2_w) // 2, (H - txt2_h) // 2)
 txt3 = text1.render("key 'p' - pause", True, WHITE, None)
 txt3_w = text1.size("key 'p' - pause")[0]
-txt3_pos = ((W - txt3_w) / 2.0, 480)
+txt3_pos = ((W - txt3_w) // 2, 480)
 txt_km = text2.render('km/h', True, WHITE, None)
 txt_km_pos = (745, 550)
 
@@ -86,7 +86,7 @@ sound_car_accident = pg.mixer.Sound('sound/accident.wav')
 sound_canister = pg.mixer.Sound('sound/canister.wav')
 sound_length = sound_canister.get_length() * 1000
 sound_start = pg.mixer.Sound('sound/Car Vroom.wav')
-if os.name is 'nt':
+if os.name == 'nt':
     pg.mixer.music.load('sound/fon.mp3')
 else:
     pg.mixer.music.load('sound/motorway.wav')
@@ -107,7 +107,7 @@ class Player(pg.sprite.Sprite):
         self.image = pg.transform.rotate(self.orig_image, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
         self.position += self.velocity
-        self.rect.center = self.position
+        self.rect.center = int(self.position.x), int(self.position.y)
 
 
 class Car(pg.sprite.Sprite):
@@ -129,11 +129,11 @@ class Car(pg.sprite.Sprite):
         if direction == 0:
             self.car_y = - self.h
             self.car_dy = True
-            self.car_x = random.randrange(80, W / 2.0, 80)
+            self.car_x = random.randrange(80, W // 2, 80)
         elif direction == 1:
             self.car_y = H + self.h
             self.car_dy = False
-            self.car_x = random.randrange(W / 2.0 + 80, W, 80)
+            self.car_x = random.randrange(W // 2 + 80, W, 80)
         for img in cars:
             if self.car_x == img.rect.x + img.w:
                 block = 1
@@ -149,12 +149,12 @@ class Car(pg.sprite.Sprite):
 
     def update(self):
         global drove_cars
-        if self.x < W / 2.0:
+        if self.x < W // 2:
             self.rect.y += self.speed
             if self.rect.y > H + self.h:
                 self.kill()
                 drove_cars += 1
-        if self.x > W / 2.0:
+        if self.x > W // 2:
             self.rect.y -= self.speed - 1
             if self.rect.y < 0 - self.h:
                 self.kill()
@@ -170,9 +170,10 @@ class Background(pg.sprite.Sprite):
         pg.draw.line(self.image, (0, 128, 0), [400, 0], [400, 600], 80)
         for xx in range(10):
             for yy in range(10):
-                pg.draw.line(self.image, (200, 200, 200),
-                             [40 + xx * 80, 0 if xx == 0 or xx == 4 or xx == 5 or xx == 9 else 10 + yy * 60],
-                             [40 + xx * 80, 600 if xx == 0 or xx == 4 or xx == 5 or xx == 9 else 50 + yy * 60], 5)
+                pg.draw.line(
+                    self.image, (200, 200, 200),
+                    [40 + xx * 80, 0 if xx == 0 or xx == 4 or xx == 5 or xx == 9 else 10 + yy * 60],
+                    [40 + xx * 80, 600 if xx == 0 or xx == 4 or xx == 5 or xx == 9 else 50 + yy * 60], 5)
         self.speed = speed
         group.add(self)
         self.rect = self.image.get_rect(topleft=(x, y))
@@ -221,16 +222,16 @@ homes = pg.sprite.Group()
 flowers = pg.sprite.Group()
 all_sprites = pg.sprite.LayeredUpdates()
 
-player = Player(x=W / 2.0 + 80, y=H / 2.0, angle=0, image=player_image)
-car = Car(random.randrange(80, W / 2.0, 80), 0, CARS[random.randint(0, n)], True, cars)
+player = Player(x=W // 2 + 80, y=H // 2, angle=0, image=player_image)
+car = Car(random.randrange(80, W // 2, 80), 0, CARS[random.randint(0, n)], True, cars)
 for i in range(2):
     bg = Background(x=0, y=0 if i == 0 else -H, group=roads)
-canister = Varia(x=random.randrange(W / 2.0 + 80, W, 80) - canister_image.get_width() / 2.0,
+canister = Varia(x=random.randrange(W // 2 + 80, W, 80) - canister_image.get_width() // 2,
                  y=-canister_image.get_height(), image=canister_image,
                  h=canister_image.get_height())
-three = Varia(x=random.randrange(80, W / 2.0, 80) - image_3.get_width() / 2.0,
+three = Varia(x=random.randrange(80, W // 2, 80) - image_3.get_width() // 2,
               y=-image_3.get_height(), image=image_3, h=image_3.get_height())
-water = Varia(x=random.randrange(80, W / 2.0, 80) - water_image.get_width() / 2.0,
+water = Varia(x=random.randrange(80, W // 2, 80) - water_image.get_width() // 2,
               y=-water_image.get_height(), image=water_image, h=water_image.get_height())
 
 canisters = pg.sprite.Group(canister)
@@ -245,21 +246,24 @@ def speedometer():
         length = 20 if deg == 5 or deg == 23 or deg == 41 or deg == 59 or deg == 77 else 10
         cos = math.cos(math.radians(deg))
         sin = math.sin(math.radians(deg))
-        pg.draw.line(screen, WHITE,
-                     [W - radius * cos, H - radius * sin],
-                     [W - (radius - length) * cos, H - (radius - length) * sin], 2)
+        pg.draw.line(
+            screen, WHITE,
+            [W - radius * cos, H - radius * sin],
+            [W - (radius - length) * cos, H - (radius - length) * sin], 2)
     for deg in range(9, 78, 17):
         cos = math.cos(math.radians(deg))
         sin = math.sin(math.radians(deg))
-        screen.blit(text2.render(str(value), True, WHITE, None),
-                    (W - (radius - 30) * cos, H - (radius - 30) * sin))
+        screen.blit(
+            text2.render(str(value), True, WHITE, None),
+            (W - (radius - 30) * cos, H - (radius - 30) * sin))
         value += 100
     screen.blit(txt_km, txt_km_pos)
     s = abs(30 - player.velocity.y * 14 if player.velocity.y <= 0 else 24 - player.velocity.y * 14)
     cos = math.cos(math.radians(s))
     sin = math.sin(math.radians(s))
-    pg.draw.line(screen, (255, 0, 0), [W, H],
-                 [W - (radius - 10) * cos, H - (radius - 10) * sin], 4)
+    pg.draw.line(
+        screen, (255, 0, 0), [W, H],
+        [W - (radius - 10) * cos, H - (radius - 10) * sin], 4)
     pg.draw.circle(screen, WHITE, [W, H], 25, 0)
 
 
@@ -271,13 +275,13 @@ def game_over():
         screen.blit(txt2, txt2_pos)
     else:
         screen.blit(txt, txt_pos)
-    screen.blit(image_3, (80 - image_3.get_width() / 2.0, 20))
-    screen.blit(canister_image, (W - 80 - canister_image.get_width() / 2.0, 20))
+    screen.blit(image_3, (80 - image_3.get_width() // 2, 20))
+    screen.blit(canister_image, (W - 80 - canister_image.get_width() // 2, 20))
     screen.blit(text1.render('-3 car accident', True, pg.Color('lime green'), BG), (115, 25))
     screen.blit(text1.render('+40 liters', True, pg.Color('lime green'), BG), (580, 25))
     screen.blit(txt3, txt3_pos)
-    play_btn = screen.blit(image_btn1, ((W - image_btn1.get_width()) / 2.0, (H - image_btn1.get_height()) / 2.0 - 100))
-    out_btn = screen.blit(image_btn2, ((W - image_btn2.get_width()) / 2.0, (H - image_btn2.get_height()) / 2.0 + 100))
+    play_btn = screen.blit(image_btn1, ((W - image_btn1.get_width()) // 2, (H - image_btn1.get_height()) // 2 - 100))
+    out_btn = screen.blit(image_btn2, ((W - image_btn2.get_width()) // 2, (H - image_btn2.get_height()) // 2 + 100))
     return play_btn, out_btn
 
 
@@ -293,17 +297,17 @@ while game:
         elif e.type == u2_event and stop == 0:
             canisters.add(canister)
             all_sprites.add(canister, layer=1)
-            canister.rect.center = random.randrange(W / 2.0 + 80, W, 80), - canister.h
+            canister.rect.center = random.randrange(W // 2 + 80, W, 80), - canister.h
             timer = random.randrange(7000, 27001, 5000)
             pg.time.set_timer(u2_event, timer)
             if timer >= 17000:
                 threes.add(three)
                 all_sprites.add(three, layer=1)
-                three.rect.center = random.randrange(80, W / 2.0, 80), - three.h * random.randint(20, 30)
+                three.rect.center = random.randrange(80, W // 2, 80), - three.h * random.randint(20, 30)
             if timer <= 7000 + 5000 * (level_game - 1):
                 waters.add(water)
                 all_sprites.add(water, layer=1)
-                water.rect.center = random.randrange(W / 2.0 + 80, W, 80), - water.h * random.randint(15, 20)
+                water.rect.center = random.randrange(W // 2 + 80, W, 80), - water.h * random.randint(15, 20)
         elif e.type == pg.KEYDOWN and e.key == pg.K_f:
             fscreen.reverse()
             if fscreen[0] == 1:
@@ -322,7 +326,7 @@ while game:
                             all_sprites.add(tree, layer=4)
                     all_sprites.add(roads, layer=0)
                     all_sprites.add(player, layer=3)
-                    player.position.x, player.position.y = W / 2.0 + 80, H / 2.0
+                    player.position.x, player.position.y = W // 2 + 80, H // 2
                     player.angle = 0
                     player.update()
                     car_accident = 0
@@ -423,7 +427,7 @@ while game:
             if int((str(drove_cars))[0]) == level_game:
                 level_game += 1
 
-        if player.position.x > W / 2.0:
+        if player.position.x > W // 2:
             level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
         else:
             level -= 0.02
@@ -452,7 +456,7 @@ while game:
         screen.fill(BG)
         all_sprites.update()
         all_sprites.draw(screen)
-        pg.draw.rect(screen, (R, G, B), (730, 55, -20, -level))
+        pg.draw.rect(screen, (R, G, B), (730, 55, -20, int(-level)))
         speedometer()
         screen.blit(fuel_image, (700, 5))
         screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
@@ -468,7 +472,7 @@ while game:
                 d.write(str(record))
                 d.close()
             screen.blit(text1.render(f'RECORD: {record}', True, WHITE, None),
-                                    ((W - text1.size(f'RECORD: {record}')[0]) / 2.0, 90))
+                                    ((W - text1.size(f'RECORD: {record}')[0]) // 2, 90))
     screen.blit(text1.render(f'Car accident: {car_accident}  Drove cars: {drove_cars}',
                              True, pg.Color('lime green'), None if stop == 1 else BG), (50, 570))
     screen.blit(text1.render(str(level_game), True, WHITE, None), (W - 25, 10))
