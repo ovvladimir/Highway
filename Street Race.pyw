@@ -46,7 +46,7 @@ COLOR = ['red3', 'dark green', 'navy', 'orange']
 imgColor = pg.image.load('img/car4.png')
 originalColor = imgColor.get_at((imgColor.get_width() // 2, imgColor.get_height() // 2))
 ar = pg.PixelArray(imgColor)
-ar.replace(originalColor, pg.Color(COLOR[random.randint(0, len(COLOR) - 1)]), 0.1)
+ar.replace(originalColor, pg.Color(random.choice(COLOR)), 0.1)
 del ar
 CARS.append(imgColor)
 
@@ -140,9 +140,9 @@ class Car(pg.sprite.Sprite):
         if block == 0:
             num = random.randint(0, n)
             if num == 3:
-                original_Color = CARS[num].get_at((CARS[num].get_width() // 2, CARS[num].get_height() // 2))
+                original_Color = CARS[num].get_at((self.w, self.h // 2))
                 arr = pg.PixelArray(CARS[num])
-                arr.replace(original_Color, pg.Color(COLOR[random.randint(0, len(COLOR) - 1)]), 0.1)
+                arr.replace(original_Color, pg.Color(random.choice(COLOR)), 0.1)
                 del arr
             new_car = Car(self.car_x, self.car_y, CARS[num], self.car_dy, cars)
             all_sprites.add(new_car, layer=2)
