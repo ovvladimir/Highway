@@ -105,9 +105,8 @@ class Player(pg.sprite.Sprite):
 
     def update(self):
         self.image = pg.transform.rotate(self.orig_image, self.angle)
-        self.rect = self.image.get_rect(center=self.rect.center)
         self.position += self.velocity
-        self.rect.center = int(self.position.x), int(self.position.y)
+        self.rect = self.image.get_rect(center=(int(self.position.x), int(self.position.y)))
 
 
 class Car(pg.sprite.Sprite):
