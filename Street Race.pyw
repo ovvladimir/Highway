@@ -19,6 +19,7 @@ level = 40
 R, G, B = 0, 255, 0
 radius = 140
 stop = 1
+stop_tick = 0
 start = True
 game = True
 pause = [False, True]
@@ -139,9 +140,9 @@ class Car(pg.sprite.Sprite):
         if block == 0:
             num = random.randint(0, n)
             if num == 3:
-                original_Color = CARS[num].get_at((self.w, self.h // 2))
+                original_color = CARS[num].get_at((self.w, self.h // 2))
                 arr = pg.PixelArray(CARS[num])
-                arr.replace(original_Color, pg.Color(random.choice(COLOR)), 0.1)
+                arr.replace(original_color, pg.Color(random.choice(COLOR)), 0.1)
                 del arr
             new_car = Car(self.car_x, self.car_y, CARS[num], self.car_dy, cars)
             all_sprites.add(new_car, layer=2)
@@ -185,8 +186,8 @@ class Background(pg.sprite.Sprite):
 
 class Varia(pg.sprite.Sprite):
     def __init__(self, x, y, image, h):
-        self.h = h
         pg.sprite.Sprite.__init__(self)
+        self.h = h
         if image is canister_image or image is image_3 or image is water_image:
             self.image = image
         else:
@@ -279,8 +280,10 @@ def game_over():
     screen.blit(text1.render('-3 car accident', True, pg.Color('lime green'), BG), (115, 25))
     screen.blit(text1.render('+40 liters', True, pg.Color('lime green'), BG), (580, 25))
     screen.blit(txt3, txt3_pos)
-    play_btn = screen.blit(image_btn1, ((W - image_btn1.get_width()) // 2, (H - image_btn1.get_height()) // 2 - 100))
-    out_btn = screen.blit(image_btn2, ((W - image_btn2.get_width()) // 2, (H - image_btn2.get_height()) // 2 + 100))
+    play_btn = screen.blit(
+        image_btn1, ((W - image_btn1.get_width()) // 2, (H - image_btn1.get_height()) // 2 - 100))
+    out_btn = screen.blit(
+        image_btn2, ((W - image_btn2.get_width()) // 2, (H - image_btn2.get_height()) // 2 + 100))
     return play_btn, out_btn
 
 
@@ -397,7 +400,6 @@ while game:
             player.position.y = 0
 
         if pg.sprite.spritecollide(player, cars, True):
-            tick.stop()
             sound_car_accident.play()
             player.angle = random.randrange(-65, 65, 25)
             car_accident += 1
@@ -406,16 +408,13 @@ while game:
             player.angle = -60
             player.velocity.y = speed
         if pg.sprite.spritecollide(player, canisters, True):
-            tick.stop()
             sound_canister.play(maxtime=int(sound_length - level * 40))
             level = 40
         if pg.sprite.spritecollide(player, threes, True, pg.sprite.collide_circle_ratio(1.0)):
             if car_accident >= 3:
-                tick.stop()
                 sound_three.play()
                 car_accident -= 3
         if pg.sprite.spritecollideany(player, waters, pg.sprite.collide_circle_ratio(0.8)):
-            tick.stop()
             sound_car_accident.play()
             sound_car_accident.fadeout(500)
             player.angle = random.randint(60, 181)
@@ -426,11 +425,19 @@ while game:
             if int((str(drove_cars))[0]) == level_game:
                 level_game += 1
 
-        if player.position.x > W // 2:
-            level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
-        else:
-            level -= 0.02
-        if level < 0 or car_accident >= 10:
+        if level == 40:
+            R, G = 0, 255
+            tick.stop()
+            stop_tick = 0
+        elif 10 < level <= 15:
+            R, G = 255, 255
+        elif 0 < level <= 10:
+            R, G = 255, 0
+            if stop == 0:
+                if stop_tick == 0:
+                    tick.play(-1)
+                    stop_tick = 1
+        elif level <= 0 or car_accident >= 10:
             all_sprites.empty()
             cars.empty()
             trees.empty()
@@ -443,19 +450,16 @@ while game:
             tick.stop()
             pg.mixer.music.stop()
             stop = 1
-        if level <= 10:
-            R, G = 255, 0
-            if stop == 0:
-                tick.play()
-        elif 10 < level < 15:
-            R, G = 255, 255
+
+        if player.position.x > W // 2:
+            level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
         else:
-            R, G = 0, 255
+            level -= 0.02
 
         screen.fill(BG)
         all_sprites.update()
         all_sprites.draw(screen)
-        pg.draw.rect(screen, (R, G, B), (730, 55, -20, int(-level)))
+        pg.draw.rect(screen, (R, G, B), (710, 55 - level, 20, level))
         speedometer()
         screen.blit(fuel_image, (700, 5))
         screen.blit(text2.render(f'FPS: {int(clock.get_fps())}', True, WHITE, None), (367, 10))
