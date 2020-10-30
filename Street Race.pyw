@@ -425,19 +425,7 @@ while game:
             if int((str(drove_cars))[0]) == level_game:
                 level_game += 1
 
-        if level == 40:
-            R, G = 0, 255
-            tick.stop()
-            stop_tick = 0
-        elif 10 < level <= 15:
-            R, G = 255, 255
-        elif 0 < level <= 10:
-            R, G = 255, 0
-            if stop == 0:
-                if stop_tick == 0:
-                    tick.play(-1)
-                    stop_tick = 1
-        elif level <= 0 or car_accident >= 10:
+        if level <= 0 or car_accident >= 10:
             all_sprites.empty()
             cars.empty()
             trees.empty()
@@ -450,6 +438,18 @@ while game:
             tick.stop()
             pg.mixer.music.stop()
             stop = 1
+        elif level == 40:
+            R, G = 0, 255
+            tick.stop()
+            stop_tick = 0
+        elif 10 < level <= 15:
+            R, G = 255, 255
+        elif 0 < level <= 10:
+            R, G = 255, 0
+            if stop == 0:
+                if stop_tick == 0:
+                    tick.play(-1)
+                    stop_tick = 1
 
         if player.position.x > W // 2:
             level -= round(0.01 + abs(player.velocity.y) / 1000.0, 3)
