@@ -21,7 +21,7 @@ block2 = False
 car_accident = 0
 level = 40
 count = [0]
-start = [255]
+start = 255
 hit_old = None
 
 pg.init()
@@ -129,7 +129,7 @@ class Alarm(pg.sprite.Sprite):
         self.rect.y += self.speed
         if self.rect.top > HEIGHT:
             self.kill()
-        if start[0] == 255:
+        if start == 255:
             for s in all_sprite:
                 if s == self:
                     s.kill()
@@ -237,8 +237,7 @@ def my_record():
 def home_screen():
     sc = pg.Surface(screen.get_size())
     sc.fill(pg.Color('navy'))
-    start[0] -= 1 if start[0] != 255 else 0
-    button_start.set_alpha(start[0])
+    button_start.set_alpha(start)
     sc.blit(button_start, button_start_rect)
     sc.blit(button_stop, button_stop_rect)
     screen.blit(sc, (0, 0))
@@ -265,7 +264,7 @@ while game:
                     level = 40
                     car_accident = 0
                     count[0] = 0
-                    start[0] -= 1
+                    start -= 1
                     pg.mouse.set_visible(False)
                 elif button_stop_rect.collidepoint(e.pos):
                     game = False
@@ -304,12 +303,14 @@ while game:
     else:
         block2 = False
 
-    if start[0] > 0:
+    if start > 0:
         home_screen()
+        if start != 255:
+            start -= 1
     else:
         level -= .01
         if level < 0 or car_accident > 9:
-            start[0] = 255
+            start = 255
             rec = my_record()
             pg.mouse.set_visible(True)
         elif level < 10:
