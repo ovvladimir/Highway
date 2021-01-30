@@ -3,8 +3,10 @@ import random
 import os
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
+path = os.path.dirname(os.path.abspath(__file__))
+record_file = os.path.join(path, 'record.txt')
 try:
-    with open('record.txt', 'x') as f:
+    with open(record_file, 'x') as f:
         f.write(str(0))
 except BaseException:
     pass
@@ -30,21 +32,24 @@ pg.mouse.set_visible(True)
 FPS = 120
 clock = pg.time.Clock()
 
-cars = [pg.image.load('img/car1.png'), pg.image.load('img/car2.png'),
-        pg.image.load('img/car3.png')]
-sound_car_accident = pg.mixer.Sound('sound/udar.wav')
-sound_canister = pg.mixer.Sound('sound/canister.wav')
-sound_accident = pg.mixer.Sound('sound/accident.wav')
+cars = [pg.image.load(os.path.join(path, 'img', 'car1.png')),
+        pg.image.load(os.path.join(path, 'img', 'car2.png')),
+        pg.image.load(os.path.join(path, 'img', 'car3.png'))]
+alarm = [pg.image.load(os.path.join(path, 'alarm', '1.png')),
+         pg.image.load(os.path.join(path, 'alarm', '2.png'))]
+sound_car_accident = pg.mixer.Sound(os.path.join(path, 'sound', 'udar.wav'))
+sound_canister = pg.mixer.Sound(os.path.join(path, 'sound', 'canister.wav'))
+sound_accident = pg.mixer.Sound(os.path.join(path, 'sound', 'accident.wav'))
 font = pg.font.Font(None, 32)
 
-button_start = pg.image.load('img/btn_play.png')
+button_start = pg.image.load(os.path.join(path, 'img', 'btn_play.png'))
 button_start_rect = button_start.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100))
-button_stop = pg.image.load('img/btn_exit.png')
+button_stop = pg.image.load(os.path.join(path, 'img', 'btn_exit.png'))
 button_stop_rect = button_stop.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
 
-fuel_image = pg.image.load('img/fuel.png')
-canister_image = pg.image.load('img/canister.png')
-water_image = pg.image.load('img/water.png')
+fuel_image = pg.image.load(os.path.join(path, 'img', 'fuel.png'))
+canister_image = pg.image.load(os.path.join(path, 'img', 'canister.png'))
+water_image = pg.image.load(os.path.join(path, 'img', 'water.png'))
 
 u1_event = pg.USEREVENT + 1
 pg.time.set_timer(u1_event, random.randrange(6000, 26001, 4000))
@@ -56,7 +61,7 @@ class Player(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.image = pg.image.load('img/car4.png')
+        self.image = pg.image.load(os.path.join(path, 'img', 'car4.png'))
         self.orig_image = self.image
         self.angle = 0
         self.speed = 2
@@ -106,6 +111,24 @@ class Player(pg.sprite.Sprite):
                 self.velocity.y -= self.acceleration
                 if self.velocity.y < 0:
                     self.velocity.y = 0
+
+
+class Alarm(pg.sprite.Sprite):
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.images = alarm
+        self.index = 0
+        self.range = len(self.images)
+        self.image = self.images[self.index]
+        self.rect = self.image.get_rect()
+        self.speed = 1
+
+    def update(self):
+        self.index += 0.02
+        self.image = self.images[int(self.index % self.range)]
+        self.rect.y += self.speed
+        if self.rect.top > HEIGHT or scr1:
+            self.kill()
 
 
 class Car(pg.sprite.Sprite):
@@ -197,7 +220,7 @@ all_sprite.add(fuel, layer=3)
 
 
 def my_record():
-    with open('record.txt', 'r+') as d:
+    with open(record_file, 'r+') as d:
         record = d.read()
         if count[0] > int(record):
             record = str(count[0])
@@ -255,8 +278,11 @@ while game:
     if hit and hit.speed != 1:
         player.position.x += 50 * random.randrange(-1, 2, 2)
         player.angle = 50 * random.randrange(-1, 2, 2)
-        car_accident += 1
         hit.speed = 1
+        car_alarm = Alarm()
+        all_sprite.add(car_alarm, layer=1)
+        car_alarm.rect.center = hit.rect.center
+        car_accident += 1
         sound_car_accident.play()
     if pg.sprite.spritecollide(player, canister_group, True):
         level = 40
