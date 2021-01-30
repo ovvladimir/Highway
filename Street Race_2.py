@@ -15,13 +15,13 @@ SIZE = WIDTH, HEIGHT = 800, 600
 GREY = (128, 128, 128)
 GREEN = (0, 128, 0)
 WHITE = (200, 200, 200)
+rgb = [0, 250, 0]
 block = False
 block2 = False
 car_accident = 0
-scr1 = True
 level = 40
-rgb = [0, 250, 0]
 count = [0]
+start = [255]
 hit_old = None
 
 pg.init()
@@ -129,7 +129,7 @@ class Alarm(pg.sprite.Sprite):
         self.rect.y += self.speed
         if self.rect.top > HEIGHT:
             self.kill()
-        if scr1:
+        if start[0] == 255:
             for s in all_sprite:
                 if s == self:
                     s.kill()
@@ -234,15 +234,20 @@ def my_record():
     return record
 
 
-def screen1(rec):
+def home_screen():
     sc = pg.Surface(screen.get_size())
     sc.fill(pg.Color('navy'))
+    start[0] -= 1 if start[0] != 255 else 0
+    button_start.set_alpha(start[0])
     sc.blit(button_start, button_start_rect)
     sc.blit(button_stop, button_stop_rect)
     screen.blit(sc, (0, 0))
     screen.blit(font.render(f'Record: {int(rec)}', 1, GREEN), (10, 10))
+    screen.blit(font.render(f'Points: {count[0]}', 1, GREEN), (10, 40))
+    screen.blit(font.render(f'Accidents: {car_accident}', 1, GREEN), (10, 70))
 
 
+rec = my_record()
 game = True
 while game:
     for e in pg.event.get():
@@ -257,10 +262,10 @@ while game:
                     for cr in cars_group:
                         cr.speed = random.randint(2, 3)
                         cr.rect.bottom = 0
-                    scr1 = False
                     level = 40
                     car_accident = 0
                     count[0] = 0
+                    start[0] -= 1
                     pg.mouse.set_visible(False)
                 elif button_stop_rect.collidepoint(e.pos):
                     game = False
@@ -299,12 +304,13 @@ while game:
     else:
         block2 = False
 
-    if scr1:
-        screen1(my_record())
+    if start[0] > 0:
+        home_screen()
     else:
         level -= .01
         if level < 0 or car_accident > 9:
-            scr1 = True
+            start[0] = 255
+            rec = my_record()
             pg.mouse.set_visible(True)
         elif level < 10:
             rgb[:2] = 250, 0
@@ -318,7 +324,7 @@ while game:
         pg.draw.rect(
             screen, rgb,
             (fuel.rect.left + 10, fuel.rect.bottom - level - 8, 21, level))
-        screen.blit(font.render(f'аварии: {car_accident}', 1, GREEN), (46, 10))
+        screen.blit(font.render(f'accidents: {car_accident}', 1, GREEN), (46, 10))
         screen.blit(font.render(f'{count[0]}', 1, GREEN), (46, HEIGHT - 30))
 
     pg.display.update()
