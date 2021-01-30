@@ -127,8 +127,12 @@ class Alarm(pg.sprite.Sprite):
         self.index += 0.02
         self.image = self.images[int(self.index % self.range)]
         self.rect.y += self.speed
-        if self.rect.top > HEIGHT or scr1:
+        if self.rect.top > HEIGHT:
             self.kill()
+        if scr1:
+            for s in all_sprite:
+                if s == self:
+                    s.kill()
 
 
 class Car(pg.sprite.Sprite):
