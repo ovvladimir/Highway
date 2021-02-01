@@ -327,6 +327,8 @@ while game:
         all_sprite.add(car_alarm, layer=1)
         car_alarm.rect.center = hit.rect.center
         car_accident += 1
+        if car_accident > 10:
+            car_accident = 10
         sound_car_accident.play()
     if pg.sprite.spritecollide(player, canister_group, True):
         level = 40
