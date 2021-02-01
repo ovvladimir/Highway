@@ -27,10 +27,10 @@ hit_old = None
 pg.init()
 pg.display.set_caption('Rally')
 screen = pg.display.set_mode(SIZE)
-pg.mouse.set_visible(True)
 
 FPS = 120
 clock = pg.time.Clock()
+font = pg.font.Font(None, 32)
 
 cars = [pg.image.load(os.path.join(path, 'img', 'car1.png')),
         pg.image.load(os.path.join(path, 'img', 'car2.png')),
@@ -40,7 +40,6 @@ alarm = [pg.image.load(os.path.join(path, 'alarm', '1.png')),
 sound_car_accident = pg.mixer.Sound(os.path.join(path, 'sound', 'udar.wav'))
 sound_canister = pg.mixer.Sound(os.path.join(path, 'sound', 'canister.wav'))
 sound_accident = pg.mixer.Sound(os.path.join(path, 'sound', 'accident.wav'))
-font = pg.font.Font(None, 32)
 
 button_start = pg.image.load(os.path.join(path, 'img', 'btn_play.png'))
 button_start_rect = button_start.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100))
@@ -194,6 +193,21 @@ class Road(pg.sprite.Sprite):
             self.rect.bottom = 0
 
 
+class Volume(pg.sprite.Sprite):
+    def __init__(self, x, y):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface((20, 140), pg.SRCALPHA)
+        self.rect = self.image.get_rect(center=(x, y))
+        self.radius = 10
+        self.alpha = 70
+        self.x = self.y = self.radius
+        self.image.fill((0, 180, 0))
+
+    def update(self):
+        self.image.set_alpha(self.alpha)
+        pg.draw.circle(self.image, (0, 255, 0), (self.x, self.y), self.radius)
+
+
 all_sprite = pg.sprite.LayeredUpdates()
 cars_group = pg.sprite.Group()
 canister_group = pg.sprite.Group()
@@ -217,10 +231,12 @@ while n < 6:
 fuel = Car(WIDTH - 80, 40, fuel_image)
 canister = Car(0, 0, canister_image)
 water = Car(0, 0, water_image)
+vol = Volume(20, HEIGHT - 80)
 
 all_sprite.add(cars_group, layer=1)
 all_sprite.add(player, layer=2)
 all_sprite.add(fuel, layer=3)
+all_sprite.add(vol, layer=4)
 
 
 def my_record():
@@ -252,6 +268,26 @@ while game:
     for e in pg.event.get():
         if e.type == pg.QUIT or e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
             game = False
+        elif e.type == pg.MOUSEMOTION and start == 0:
+            if e.pos[0] < 40 and e.pos[1] > vol.rect.top:
+                pg.mouse.set_visible(True)
+                vol.alpha = 70
+                if vol.rect.left < e.pos[0] < vol.rect.right and \
+                        vol.rect.top < e.pos[1] < vol.rect.bottom and \
+                        e.buttons[0]:
+                    vol.image.fill((0, 180, 0))
+                    vol.y = abs(vol.rect.top - e.pos[1])
+                    if vol.y > vol.rect.h - vol.radius:
+                        vol.y = vol.rect.h - vol.radius
+                    elif vol.y < vol.radius:
+                        vol.y = vol.radius
+                    volume = 1 - vol.y / float(vol.rect.h - vol.radius)
+                    sound_car_accident.set_volume(volume)
+                    sound_canister.set_volume(volume)
+                    sound_accident.set_volume(volume)
+            else:
+                vol.alpha -= 1
+                pg.mouse.set_visible(False)
         elif e.type == pg.MOUSEBUTTONDOWN:
             if e.button == 1:
                 if button_start_rect.collidepoint(e.pos):
@@ -303,6 +339,8 @@ while game:
     else:
         block2 = False
 
+    if vol.alpha < 70:
+        vol.alpha = 0 if vol.alpha <= 0 else vol.alpha - 1
     if start > 0:
         home_screen()
         if start != 255:
